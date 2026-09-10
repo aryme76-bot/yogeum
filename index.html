@@ -408,9 +408,7 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
 
   /* ---- 채널 세그먼트 ---- */
   RATES.channels.forEach(function (ch, i) {
-    var b = h("button", { type: "button", "aria-pressed": String(i === state.channel) }, [
-      ch.name, h("small", { text: ch.reserve != null ? "유보 " + ch.reserve + "만" : "" })
-    ]);
+    var b = h("button", { type: "button", "aria-pressed": String(i === state.channel), text: ch.name });
     b.addEventListener("click", function () {
       state.channel = i;
       Array.prototype.forEach.call(channelSeg.children, function (c, j) { c.setAttribute("aria-pressed", String(j === i)); });
