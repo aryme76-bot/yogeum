@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>원콜 단가표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --ink: #16202a;
+    --ink-2: #5b6876;
+    --ink-3: #8b96a3;
+    --line: #d9dfe6;
+    --line-strong: #b8c2cd;
+    --accent: #0d6b66;
+    --accent-ink: #ffffff;
+    --accent-soft: #e1f0ee;
+    --caution: #b4451f;
+    --caution-soft: #fbeae2;
+    --row-alt: #f8fafb;
+    --head: #eef2f5;
+    --focus: #0d6b66;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f151b;
+      --surface: #171f28;
+      --ink: #e7ecf1;
+      --ink-2: #9aa6b3;
+      --ink-3: #6f7c8a;
+      --line: #28323d;
+      --line-strong: #3b4753;
+      --accent: #3fb3ab;
+      --accent-ink: #07201e;
+      --accent-soft: #19302e;
+      --caution: #f0946f;
+      --caution-soft: #3a2218;
+      --row-alt: #1b242e;
+      --head: #1f2934;
+      --focus: #3fb3ab;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f151b;
+    --surface: #171f28;
+    --ink: #e7ecf1;
+    --ink-2: #9aa6b3;
+    --ink-3: #6f7c8a;
+    --line: #28323d;
+    --line-strong: #3b4753;
+    --accent: #3fb3ab;
+    --accent-ink: #07201e;
+    --accent-soft: #19302e;
+    --caution: #f0946f;
+    --caution-soft: #3a2218;
+    --row-alt: #1b242e;
+    --head: #1f2934;
+    --focus: #3fb3ab;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 36px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* ---------- 요금 버튼 ---------- */
+  .launcher {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding-top: 48px;
+  }
+  .launcher.compact { padding-top: 0; flex-direction: row; justify-content: space-between; gap: 16px; }
+  .fare-btn {
+    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
+    font-weight: 900;
+    font-size: 46px;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    padding: 26px 66px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 8px 24px rgba(13, 107, 102, 0.28);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .fare-btn:hover { transform: translateY(-2px); }
+  .fare-btn:active { transform: translateY(0); }
+  .compact .fare-btn { font-size: 22px; padding: 10px 24px; border-radius: 10px; box-shadow: none; }
+  .hint { color: var(--ink-2); font-size: 14px; margin: 0; }
+  .compact .hint { display: none; }
+  .built { color: var(--ink-3); font-size: 13px; margin: 0; }
+  .launcher:not(.compact) .built { display: none; }
+
+  /* ---------- 패널 ---------- */
+  .panel { display: flex; flex-direction: column; gap: 18px; }
+  .panel[hidden] { display: none; }
+
+  .controls {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .controls-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .controls h1 {
+    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: 0.01em;
+  }
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+    background: var(--head);
+  }
+  .seg button {
+    border: 0;
+    background: transparent;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink-2);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .seg button small { font-weight: 500; font-size: 12px; color: var(--ink-3); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .seg button[aria-pressed="true"] small { color: var(--accent); }
+
+  .controls-bottom { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; }
+  .tab {
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .tab:hover { background: var(--row-alt); }
+  .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .search { flex: 0 1 260px; min-width: 180px; }
+  .search input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+  }
+  .tool {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .tool:hover { background: var(--row-alt); }
+
+
+  /* ---------- 통신사 섹션 ---------- */
+  .carrier {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .carrier[hidden] { display: none; }
+  .carrier-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 16px 18px 12px;
+  }
+  .carrier-head h2 {
+    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: 0.01em;
+  }
+  .carrier-head .meta { color: var(--ink-2); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .table-wrap { overflow-x: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  table.rates { width: 100%; border-collapse: collapse; min-width: 860px; font-variant-numeric: tabular-nums; }
+  table.rates th, table.rates td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.rates th {
+    background: var(--head);
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--ink-2);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  table.rates th.l { text-align: left; }
+  table.rates td { text-align: right; white-space: nowrap; }
+  table.rates td.l { text-align: left; white-space: normal; font-weight: 500; min-width: 240px; }
+  table.rates tbody tr:nth-child(odd):not(.group) { background: var(--row-alt); }
+  table.rates tbody:last-child tr:last-child td { border-bottom: 0; }
+  table.rates tr.group td {
+    text-align: left;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    padding: 8px 12px;
+    border-top: 2px solid var(--line-strong);
+  }
+  table.rates tr.group td small { font-family: inherit; font-weight: 600; font-size: 12px; color: var(--ink-2); margin-left: 8px; letter-spacing: 0; }
+  .speeds { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .speeds .lbl { font-size: 13px; color: var(--ink-2); margin-right: 4px; }
+  .chip {
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip:hover { background: var(--row-alt); }
+  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  table.rates tr.solo td.l::after {
+    content: "인터넷 단독";
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-3);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 0 7px;
+    vertical-align: middle;
+  }
+  td.dim { color: var(--ink-3); }
+  td.monthly { font-weight: 600; }
+  td.total { font-weight: 700; font-size: 17px; color: var(--accent); }
+  td.total span { font-size: 12px; font-weight: 600; margin-left: 1px; }
+  table.rates td.parts { text-align: left; color: var(--ink-2); font-size: 13px; }
+  td.parts b { color: var(--ink); font-weight: 600; }
+  td.parts i { font-style: normal; color: var(--ink-3); margin: 0 5px; }
+  td.parts .tags { display: block; font-size: 12px; color: var(--ink-3); margin-top: 1px; }
+  .none { padding: 24px 18px; color: var(--ink-2); text-align: center; }
+
+  .policy {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    padding: 14px 18px 18px;
+  }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card h3 { font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
+  .card h3 small { font-weight: 500; color: var(--ink-3); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; align-items: baseline; }
+  .kv dt { color: var(--ink-2); margin: 0; }
+  .kv dd { margin: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .kv dd.sum { border-top: 1px solid var(--line); padding-top: 4px; font-weight: 700; }
+  .kv dt.sum { border-top: 1px solid var(--line); padding-top: 4px; }
+  .card.caution { border-color: var(--caution); }
+  .card.caution h3 { color: var(--caution); }
+  .notes { margin: 0; padding-left: 18px; font-size: 14px; display: flex; flex-direction: column; gap: 3px; }
+  .notes li::marker { color: var(--caution); }
+  .notes.plain li::marker { color: var(--ink-3); }
+  .notes li.extra { font-weight: 700; color: var(--caution); }
+
+  .foot { color: var(--ink-3); font-size: 13px; text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) { .fare-btn { transition: none; } }
+  @media (max-width: 560px) {
+    .fare-btn { font-size: 36px; padding: 22px 44px; }
+    .carrier-head h2 { font-size: 20px; }
+  }
+  @media print {
+    body { background: #fff; color: #000; font-size: 11px; }
+    .wrap { padding: 0; max-width: none; gap: 10px; }
+    .launcher, .controls-bottom, .tool, .summary-head .toggle { display: none !important; }
+    .controls, .summary, .carrier { border: 0; border-radius: 0; break-inside: avoid; }
+    .carrier { break-inside: auto; page-break-before: always; }
+    .carrier:first-of-type { page-break-before: auto; }
+    table.rates { min-width: 0; }
+    table.rates th, table.rates td { padding: 4px 6px; }
+    td.total { font-size: 13px; }
+    .policy { padding: 8px 0 0; }
+    tbody tr:nth-child(even) { background: #f3f3f3 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <section class="launcher" id="launcher">
+    <button class="fare-btn" id="fareBtn" type="button" aria-expanded="false" aria-controls="panel">요금</button>
+    <p class="hint">버튼을 누르면 통신사별 단가표가 나옵니다.</p>
+    <p class="built">기준 자료 반영일 2026.09.10</p>
+  </section>
+
+  <section class="panel" id="panel" hidden>
+    <div class="controls">
+      <div class="controls-top">
+        <h1>원콜 단가표</h1>
+        <div class="seg" id="channelSeg" role="group" aria-label="채널 선택"></div>
+      </div>
+      <div class="controls-bottom">
+        <div class="tabs" id="tabs" role="group" aria-label="통신사 선택"></div>
+        <div class="search"><input id="search" type="search" placeholder="상품명 검색 (예: 프리미엄)" aria-label="상품 검색"></div>
+      </div>
+      <div class="speeds" id="speeds" role="group" aria-label="속도 선택"></div>
+    </div>
+
+
+    <div id="carriers"></div>
+    <p class="foot">단위: 원. 사은품은 만원 단위이며 구성 항목의 합이 총액입니다.</p>
+  </section>
+</div>
+
+<script>
+var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carriers":[{"name":"LG(101)","products":[{"name":"와이파이광랜100M+AP","internet":22000,"tv":null,"stb":null,"monthly":22000,"bundle":16500,"gift":{"raw":"현금15만원 (이중요금포함)","parts":[["현금",15]],"total":15,"tags":["이중요금포함"]}},{"name":"와이파이기가슬림500M+AP","internet":33000,"tv":null,"stb":null,"monthly":33000,"bundle":23100,"gift":{"raw":"현금23만원 (이중요금포함)","parts":[["현금",23]],"total":23,"tags":["이중요금포함"]}},{"name":"와이파이기가안심1G+AP","internet":38500,"tv":null,"stb":null,"monthly":38500,"bundle":25300,"gift":{"raw":"현금23만원 (이중요금포함)","parts":[["현금",23]],"total":23,"tags":["이중요금포함"]}},{"name":"와이파이광랜100+프리미엄(UHD4)+AP+클락","internet":22000,"tv":16500,"stb":4400,"monthly":42900,"bundle":37400,"gift":{"raw":"현금35만원 (이중요금포함)","parts":[["현금",35]],"total":35,"tags":["이중요금포함"]}},{"name":"프리미엄기가슬림500+프리미엄(UHD4)+AP+클락","internet":31900,"tv":16500,"stb":4400,"monthly":52800,"bundle":42900,"gift":{"raw":"현금32+이모8=총40만원+페이백+이중요금","parts":[["현금",32],["이모",8]],"total":40,"tags":["페이백","이중요금"]}},{"name":"프리미엄기가안심1G+프리미엄(UHD4)+AP+클락","internet":37400,"tv":16500,"stb":4400,"monthly":58300,"bundle":45100,"gift":{"raw":"현금30+이모5=총35만원+페이백+이중요금","parts":[["현금",30],["이모",5]],"total":35,"tags":["페이백","이중요금"]}},{"name":"(소호)와파500+실속형(UHD4)+AP","internet":27500,"tv":13200,"stb":4400,"monthly":45100,"bundle":35200,"gift":{"raw":"현금+상품권 (가이드없이 일괄지급)","parts":[],"total":null,"tags":["현금","상품권","가이드없이 일괄지급"]}}],"policy":{"notes":["가입경로-홈플러스","설치후 결합신청","네이버이메일필수(기사내방시확인)"],"extra":["9개월후티비하향(실속형) -3,300=49,500원","9개월후결합+티비하향=39,600원","프리미엄VOD(18,700원)/실속형(13,200원)","프리미엄기가슬림500+프리미엄VOD(UHD4)+AP+클락 => 결합전 55,000원/ 결합후 45,100원 / 3개월후 실속형 결합전 49,500원 / 결합후 39,600원"],"installLabel":"설치비 (추가티비 +22,000)","extraTvLabel":"추가티비 (실속형)","install":{"single":36300,"it":56100,"itt":78100,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":7700,"stb":4400,"monthly":12100,"stbLabel":"UHD4"}}},{"name":"SK(106)","products":[{"name":"광랜 100M+AP","internet":23100,"tv":null,"stb":null,"monthly":23100,"bundle":18700,"gift":{"raw":"현금9만원 (이중요금포함)","parts":[["현금",9]],"total":9,"tags":["이중요금포함"]}},{"name":"기가라이트 500M+AP","internet":34100,"tv":null,"stb":null,"monthly":34100,"bundle":23100,"gift":{"raw":"현금17만원 (이중요금포함)","parts":[["현금",17]],"total":17,"tags":["이중요금포함"]}},{"name":"기가 1G+AP","internet":39600,"tv":null,"stb":null,"monthly":39600,"bundle":26400,"gift":{"raw":"현금17만원 (이중요금포함)","parts":[["현금",17]],"total":17,"tags":["이중요금포함"]}},{"name":"광랜100M+ALL(스마트3)+AP","internet":22000,"tv":16500,"stb":4400,"monthly":42900,"bundle":38500,"gift":{"raw":"현금16+이모13=총29만원+페이백 (이중요금포함)","parts":[["현금",16],["이모",13]],"total":29,"tags":["페이백","이중요금포함"]}},{"name":"기가라이트500M+ALL(스마트3)+AP","internet":28600,"tv":16500,"stb":4400,"monthly":49500,"bundle":42900,"gift":{"raw":"현금24+이모13=총37만원+페이백+이중요금","parts":[["현금",24],["이모",13]],"total":37,"tags":["페이백","이중요금"]}},{"name":"기가1G+ALL(스마트3)+AP","internet":34100,"tv":16500,"stb":4400,"monthly":55000,"bundle":46200,"gift":{"raw":"현금24+이모13=총37만원+페이백+이중요금","parts":[["현금",24],["이모",13]],"total":37,"tags":["페이백","이중요금"]}}],"policy":{"notes":["가입경로-전단지","접수시 결합가능(본인폰1대기준)"],"extra":["1년후티비하향(이코노미) -6,600=42,900원","1년후결합+티비하향=36,300원"],"installLabel":"설치비 (추가티비 +17,600)","extraTvLabel":"추가티비 (스탠다드)","install":{"single":36300,"it":56100,"itt":73700,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":7700,"stb":2200,"monthly":9900,"stbLabel":"스마트3"}}},{"name":"KT(100)","products":[{"name":"슬림100M+AP","internet":23100,"tv":null,"stb":null,"monthly":23100,"bundle":17600,"gift":{"raw":"현금5+이모4=총9만원 (이중요금포함)","parts":[["현금",5],["이모",4]],"total":9,"tags":["이중요금포함"]}},{"name":"베이직500M+AP","internet":34100,"tv":null,"stb":null,"monthly":34100,"bundle":28600,"gift":{"raw":"현금10+이모4=총14만원 (이중요금포함)","parts":[["현금",10],["이모",4]],"total":14,"tags":["이중요금포함"]}},{"name":"에센스1G+AP","internet":38500,"tv":null,"stb":null,"monthly":38500,"bundle":33000,"gift":{"raw":"현금10+이모4=총14만원 (이중요금포함)","parts":[["현금",10],["이모",4]],"total":14,"tags":["이중요금포함"]}},{"name":"슬림100M+모든G(지니3)+AP","internet":23100,"tv":19800,"stb":4400,"monthly":47300,"bundle":41800,"gift":{"raw":"현금28+이모7=총35만원 (이중요금포함)","parts":[["현금",28],["이모",7]],"total":35,"tags":["이중요금포함"]}},{"name":"베이직500M+모든G(지니3)+AP","internet":28600,"tv":19800,"stb":4400,"monthly":52800,"bundle":47300,"gift":{"raw":"현금28+이모7=총35만원+페이백+이중요금","parts":[["현금",28],["이모",7]],"total":35,"tags":["페이백","이중요금"]}},{"name":"에센스1G+모든G(지니3)+AP","internet":33000,"tv":19800,"stb":4400,"monthly":57200,"bundle":51700,"gift":{"raw":"현금25+이모10=총35만원+페이백+이중요금","parts":[["현금",25],["이모",10]],"total":35,"tags":["페이백","이중요금"]}}],"policy":{"notes":["가입경로-전단지","설치후결합신청/패밀리결합 -10만원","이메일필수 (KT폰제외)"],"extra":["1년후 티비하향(베이직) -5,500=45,100원","1년후결합+티비하향=39,600원"],"installLabel":"설치비 (추가티비 +15,400)","extraTvLabel":"추가티비 (OTV11베이직)","install":{"single":36000,"it":56200,"itt":71600,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":7370,"stb":4400,"monthly":11770,"stbLabel":"지니3"}}},{"name":"KT스카이라이프(1588-3002)","products":[{"name":"스카이안심100M+AP","internet":25300,"tv":null,"stb":null,"monthly":25300,"bundle":null,"gift":{"raw":"현금4+스카이샵4=총8만원 (이중요금포함)","parts":[["현금",4],["스카이샵",4]],"total":8,"tags":["이중요금포함"]}},{"name":"스카이안심200M+AP","internet":26400,"tv":null,"stb":null,"monthly":26400,"bundle":null,"gift":{"raw":"현금6+스카이샵4=총10만원 (이중요금포함)","parts":[["현금",6],["스카이샵",4]],"total":10,"tags":["이중요금포함"]}},{"name":"스카이안심500M+AP","internet":31900,"tv":null,"stb":null,"monthly":31900,"bundle":null,"gift":{"raw":"현금6+스카이샵5=총11만원 (이중요금포함)","parts":[["현금",6],["스카이샵",5]],"total":11,"tags":["이중요금포함"]}},{"name":"스카이안심200M+IPTV플러스(지니A)+AP","internet":23100,"tv":11000,"stb":3300,"monthly":37400,"bundle":null,"gift":{"raw":"현금23+스카이샵4=총27만원+페이백+이중요금","parts":[["현금",23],["스카이샵",4]],"total":27,"tags":["페이백","이중요금"]}},{"name":"스카이안심500M+IPTV플러스(지니A)+AP","internet":28600,"tv":11000,"stb":3300,"monthly":42900,"bundle":null,"gift":{"raw":"현금27+스카이샵5=총32만원+페이백+이중요금","parts":[["현금",27],["스카이샵",5]],"total":32,"tags":["페이백","이중요금"]}}],"policy":{"notes":["신분증 발급일자 확인","운전면허번호+식별번호"],"extra":["KT전환건 사은품 -10만원","다셋탑 프로모션 임대료 50%"],"installLabel":"설치비 (추가티비 +11,000)","extraTvLabel":"추가티비 (IPTV베이직)","install":{"single":36300,"it":48500,"itt":59500,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":6050,"stb":1650,"monthly":7700,"stbLabel":"지니A"}}}]}]};
+</script>
+<script>
+(function () {
+  var el = function (id) { return document.getElementById(id); };
+  var launcher = el("launcher"), fareBtn = el("fareBtn"), panel = el("panel");
+  var channelSeg = el("channelSeg"), tabs = el("tabs"), search = el("search");
+  var carriersEl = el("carriers");
+
+  var state = { channel: 0, carrier: "all", q: "", speed: "all" };
+  var speedsEl = el("speeds");
+
+  function speedOf(name) {
+    var m = /(\d+(?:\.\d+)?)\s*(M|G)(?![a-z])/i.exec(name);
+    if (!m) {
+      var bare = /(?:^|[^\d])(100|160|200|500)(?![\d])/.exec(name);
+      if (bare) return { label: bare[1] + "M", mbps: Number(bare[1]) };
+      if (/1기가|(?:^|[^\d])1G/i.test(name)) return { label: "1G", mbps: 1000 };
+      return { label: "기타", mbps: Infinity };
+    }
+    var n = parseFloat(m[1]);
+    var unit = m[2].toUpperCase();
+    return { label: m[1] + unit, mbps: unit === "G" ? n * 1000 : n };
+  }
+
+  function won(n) { return n == null ? "-" : n.toLocaleString("ko-KR"); }
+  function man(n) { return n == null ? "-" : n.toLocaleString("ko-KR") + "만"; }
+  function h(tag, attrs, children) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === "class") node.className = attrs[k];
+      else if (k === "text") node.textContent = attrs[k];
+      else if (k === "html") node.innerHTML = attrs[k];
+      else node.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { if (c) node.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return node;
+  }
+  function shortName(name) { return name.replace(/\s*\([\d\-]+\)\s*$/, ""); }
+  function channel() { return RATES.channels[state.channel]; }
+
+  /* ---- 채널 세그먼트 ---- */
+  if (RATES.channels.length < 2) channelSeg.hidden = true;
+  RATES.channels.forEach(function (ch, i) {
+    var b = h("button", { type: "button", "aria-pressed": String(i === state.channel), text: ch.name });
+    b.addEventListener("click", function () {
+      state.channel = i;
+      Array.prototype.forEach.call(channelSeg.children, function (c, j) { c.setAttribute("aria-pressed", String(j === i)); });
+      render();
+    });
+    channelSeg.appendChild(b);
+  });
+
+  /* ---- 통신사 탭 ---- */
+  function buildTabs() {
+    tabs.innerHTML = "";
+    var items = [{ key: "all", label: "전체" }].concat(channel().carriers.map(function (c, i) { return { key: String(i), label: shortName(c.name) }; }));
+    items.forEach(function (it) {
+      var b = h("button", { type: "button", class: "tab", "aria-pressed": String(state.carrier === it.key), text: it.label });
+      b.addEventListener("click", function () {
+        state.carrier = it.key;
+        Array.prototype.forEach.call(tabs.children, function (c) { c.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        renderCarriers();
+      });
+      tabs.appendChild(b);
+    });
+  }
+
+
+  /* ---- 속도 칩 ---- */
+  function buildSpeeds() {
+    speedsEl.innerHTML = "";
+    var seen = {};
+    channel().carriers.forEach(function (c) {
+      c.products.forEach(function (p) { var sp = speedOf(p.name); seen[sp.label] = sp.mbps; });
+    });
+    var labels = Object.keys(seen).sort(function (a, b) { return seen[a] - seen[b]; });
+    if (labels.indexOf(state.speed) === -1) state.speed = "all";
+    speedsEl.appendChild(h("span", { class: "lbl", text: "속도" }));
+    [{ key: "all", label: "전체" }].concat(labels.map(function (l) { return { key: l, label: l }; })).forEach(function (it) {
+      var b = h("button", { type: "button", class: "chip", "aria-pressed": String(state.speed === it.key), text: it.label });
+      b.addEventListener("click", function () {
+        state.speed = it.key;
+        Array.prototype.forEach.call(speedsEl.querySelectorAll(".chip"), function (c) { c.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        renderCarriers();
+      });
+      speedsEl.appendChild(b);
+    });
+  }
+
+  /* ---- 통신사 섹션 ---- */
+  function giftParts(g) {
+    var parts = g.parts || [];
+    var td = h("td", { class: "parts" });
+    parts.forEach(function (p, i) {
+      if (i) td.appendChild(h("i", { text: "+" }));
+      td.appendChild(document.createTextNode(p[0] + " "));
+      td.appendChild(h("b", { text: String(p[1]) }));
+    });
+    if (!parts.length) td.appendChild(document.createTextNode(g.raw));
+    else if (g.tags && g.tags.length) td.appendChild(h("span", { class: "tags", text: g.tags.join(" · ") }));
+    return td;
+  }
+
+  function carrierSection(c) {
+    var q = state.q;
+    var terms = q.split(/[\s,]+/).filter(Boolean);
+    var rows = c.products.filter(function (p) {
+      var name = p.name.toLowerCase();
+      if (state.speed !== "all" && speedOf(p.name).label !== state.speed) return false;
+      return terms.every(function (t) { return name.indexOf(t) !== -1; });
+    });
+    var filtering = terms.length || state.speed !== "all";
+    if (filtering && !rows.length) return null;
+    var sec = h("section", { class: "carrier" });
+    var meta = h("div", { class: "meta" }, [
+      h("span", { text: "상품 " + c.products.length + "종" }),
+      c.policy.installLabel ? h("span", { text: c.policy.installLabel }) : null,
+      c.policy.extraTvLabel ? h("span", { text: c.policy.extraTvLabel }) : null
+    ]);
+    sec.appendChild(h("div", { class: "carrier-head" }, [h("h2", { text: c.name }), meta]));
+
+    if (rows.length) {
+      var thead = h("thead", null, [h("tr", null, [
+        h("th", { class: "l", text: "상품" }), h("th", { text: "인터넷" }), h("th", { text: "TV" }), h("th", { text: "셋탑" }),
+        h("th", { text: "월요금" }), h("th", { text: "결합금액" }), h("th", { text: "사은품 총" }), h("th", { class: "l", text: "구성 (만원)" })
+      ])]);
+      var groups = [];
+      rows.forEach(function (p) {
+        var sp = speedOf(p.name);
+        var g = groups.filter(function (x) { return x.label === sp.label; })[0];
+        if (!g) { g = { label: sp.label, mbps: sp.mbps, items: [] }; groups.push(g); }
+        g.items.push(p);
+      });
+      groups.sort(function (a, b) { return a.mbps - b.mbps; });
+      var table = h("table", { class: "rates" }, [thead]);
+      groups.forEach(function (g) {
+      var tbody = h("tbody");
+      tbody.appendChild(h("tr", { class: "group" }, [h("td", { colspan: "8" }, [g.label, h("small", { text: g.items.length + "종" })])]));
+      g.items.forEach(function (p) {
+        var tr = h("tr", { class: p.tv == null ? "solo" : "" }, [
+          h("td", { class: "l", text: p.name }),
+          h("td", { class: "num", text: won(p.internet) }),
+          h("td", { class: "num" + (p.tv == null ? " dim" : ""), text: won(p.tv) }),
+          h("td", { class: "num" + (p.stb == null ? " dim" : ""), text: won(p.stb) }),
+          h("td", { class: "num monthly", text: won(p.monthly) }),
+          h("td", { class: "num" + (p.bundle == null ? " dim" : ""), text: won(p.bundle) }),
+          h("td", { class: "num total" }, [p.gift.total != null ? String(p.gift.total) : "-", h("span", { text: p.gift.total != null ? "만" : "" })]),
+          giftParts(p.gift)
+        ]);
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      });
+      sec.appendChild(h("div", { class: "table-wrap" }, [table]));
+    } else {
+      sec.appendChild(h("div", { class: "none", text: "「" + search.value.trim() + "」에 해당하는 상품이 없습니다." }));
+    }
+
+    var p = c.policy;
+    var policy = h("div", { class: "policy" });
+    if (p.install) {
+      policy.appendChild(h("div", { class: "card" }, [
+        h("h3", null, ["설치비", h("small", { text: p.installLabel.replace("설치비", "").trim() })]),
+        h("dl", { class: "kv" }, [
+          h("dt", { text: p.install.labels[0] }), h("dd", { text: won(p.install.single) }),
+          h("dt", { text: p.install.labels[1] }), h("dd", { text: won(p.install.it) }),
+          h("dt", { text: p.install.labels[2] }), h("dd", { text: won(p.install.itt) })
+        ])
+      ]));
+    }
+    if (p.extraTv) {
+      policy.appendChild(h("div", { class: "card" }, [
+        h("h3", null, ["추가 TV", h("small", { text: p.extraTvLabel.replace("추가티비", "").trim() })]),
+        h("dl", { class: "kv" }, [
+          h("dt", { text: "기본료" }), h("dd", { text: won(p.extraTv.base) }),
+          h("dt", { text: "셋탑 (" + p.extraTv.stbLabel + ")" }), h("dd", { text: won(p.extraTv.stb) }),
+          h("dt", { class: "sum", text: "월 금액" }), h("dd", { class: "sum", text: won(p.extraTv.monthly) })
+        ])
+      ]));
+    }
+    if (/^KT/.test(c.name) && (p.notes.length || p.extra.length)) {
+      var ul = h("ul", { class: "notes" });
+      p.notes.forEach(function (n) { ul.appendChild(h("li", { text: n })); });
+      p.extra.forEach(function (n) { ul.appendChild(h("li", { class: "extra", text: n })); });
+      policy.appendChild(h("div", { class: "card caution" }, [h("h3", { text: "가입 조건 · 주의" }), ul]));
+    } else if (p.extra.length) {
+      var ul2 = h("ul", { class: "notes plain" });
+      p.extra.forEach(function (n) { ul2.appendChild(h("li", { text: n })); });
+      policy.appendChild(h("div", { class: "card" }, [h("h3", { text: "안내" }), ul2]));
+    }
+    if (policy.children.length) sec.appendChild(policy);
+    return sec;
+  }
+
+  function renderCarriers() {
+    carriersEl.innerHTML = "";
+    var frag = document.createDocumentFragment();
+    channel().carriers.forEach(function (c, i) {
+      if (state.carrier !== "all" && state.carrier !== String(i)) return;
+      var sec = carrierSection(c);
+      if (sec) frag.appendChild(sec);
+    });
+    if (!frag.childNodes.length) {
+      var what = [state.speed !== "all" ? state.speed : "", search.value.trim()].filter(Boolean).join(" ");
+      frag.appendChild(h("div", { class: "carrier" }, [h("div", { class: "none", text: "「" + what + "」에 해당하는 상품이 없습니다." })]));
+    }
+    carriersEl.appendChild(frag);
+    carriersEl.style.display = "flex";
+    carriersEl.style.flexDirection = "column";
+    carriersEl.style.gap = "18px";
+  }
+
+  function render() {
+    buildTabs();
+    buildSpeeds();
+    renderCarriers();
+  }
+
+  fareBtn.addEventListener("click", function () {
+    var open = panel.hidden;
+    panel.hidden = !open;
+    fareBtn.setAttribute("aria-expanded", String(open));
+    launcher.classList.toggle("compact", open);
+    if (open) { render(); panel.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  });
+  search.addEventListener("input", function () {
+    state.q = search.value.trim().toLowerCase();
+    renderCarriers();
+  });
+})();
+</script>
+</body>
+</html>

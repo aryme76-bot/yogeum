@@ -1,6 +1,8 @@
 # 인터넷·TV 단가표
 
-공유 주소: https://aryme76-bot.github.io/yogeum/
+공유 주소
+- 기본 단가표 (CPA · 챗봇): https://aryme76-bot.github.io/yogeum/
+- 원콜 단가표: https://aryme76-bot.github.io/yogeum/onecall/
 
 `index.html`을 크롬으로 열고 **요금** 버튼을 누르면 통신사별·속도별 단가표가 나옵니다.
 
