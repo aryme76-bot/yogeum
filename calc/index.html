@@ -167,6 +167,28 @@
   .checks label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
   .checks input { margin-top: 3px; }
   .rnote { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+  .sim-open {
+    background: var(--surface);
+    border: 1px dashed var(--line-strong);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .sim-open p { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .sim-open .go { padding: 10px 18px; border-radius: 9px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .line { grid-template-columns: minmax(0, 1fr) auto auto auto; }
+  .line .fee { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.3; }
+  .line .fee .base { font-size: 12px; color: var(--ink-3); text-decoration: line-through; }
+  .line .fee .disc { font-weight: 600; }
+  .rrow.two { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 12px; }
+  .rrow.two span:nth-child(2) { color: var(--ink-3); font-weight: 500; text-decoration: line-through; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rhead { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; font-size: 11px; letter-spacing: 0.06em; color: var(--ink-3); font-weight: 600; text-transform: uppercase; }
+  .rhead span { white-space: nowrap; }
+  .rrow.save span:last-child { color: var(--accent); }
   .result {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -255,7 +277,7 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
   var stepsEl = el("steps"), resultEl = el("result");
   var NET = RATES.channels.filter(function (c) { return c.type !== "sim"; });
   var SIM = RATES.channels.filter(function (c) { return c.type === "sim"; })[0] || null;
-  var C = { ch: 0, carrier: null, speed: null, product: null, extraTv: 0, bundle: false, simCarrier: 0, simPlan: 0, sims: [], ded: {} };
+  var C = { ch: 0, carrier: null, speed: null, product: null, extraTv: 0, bundle: false, simOpen: false, simCarrier: 0, simPlan: 0, sims: [], ded: {} };
 
   function netCh() { return NET[C.ch]; }
   function carrierObj() { return C.carrier == null ? null : netCh().carriers[C.carrier]; }
@@ -353,12 +375,20 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
         }))]));
       }
     }
-    if (SIM) {
+    if (SIM && !C.simOpen) {
+      var go = h("button", { type: "button", class: "go", text: "유심 계산하기" });
+      go.addEventListener("click", function () { C.simOpen = true; renderCalc(); var last = stepsEl.lastElementChild; if (last) last.scrollIntoView({ behavior: "smooth", block: "start" }); });
+      stepsEl.appendChild(h("div", { class: "sim-open" }, [
+        h("p", { text: prod ? "유선 계산이 끝났습니다. 유심 회선을 더해 총 합계를 보려면 누르세요." : "유선 상품을 고른 뒤, 또는 유심만 계산하려면 누르세요." }),
+        go
+      ]));
+    }
+    if (SIM && C.simOpen) {
       var sc = SIM.carriers[C.simCarrier] || SIM.carriers[0];
       if (C.simPlan >= sc.plans.length) C.simPlan = 0;
       var sel = h("select", { "aria-label": "요금제 선택" });
       sc.plans.forEach(function (pl, i) {
-        var o = h("option", { value: String(i), text: pl.name + " · " + pl.data + " · 할인 " + won(pl.discount) + "원 · 사은품 " + (pl.gifts.join("/") || "-") });
+        var o = h("option", { value: String(i), text: pl.name + " · " + pl.data + " · 기본 " + won(pl.price) + "원 → 선택약정 " + won(pl.discount) + "원 · 사은품 " + (pl.gifts.join("/") || "-") });
         if (i === C.simPlan) o.selected = true;
         sel.appendChild(o);
       });
@@ -373,12 +403,12 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
         x.addEventListener("click", function () { C.sims.splice(i, 1); renderCalc(); });
         return h("div", { class: "line" }, [
           h("span", { text: cc.name + " " + pl.name + (g.rule ? " (" + g.rule + ")" : "") }),
-          h("span", { class: "amt", text: "월 " + won(pl.discount) + "원" }),
+          h("span", { class: "fee" }, [h("span", { class: "base", text: won(pl.price) + "원" }), h("span", { class: "disc", text: won(pl.discount) + "원" })]),
           h("span", { class: "gift" + (g.man == null ? " no" : ""), text: g.man == null ? (g.raw || "-") : manWon(g.man) }),
           x
         ]);
       }));
-      stepsEl.appendChild(step(n++, "유심", SIM.basis || null, [
+      stepsEl.appendChild(step(n++, "유심", (SIM.basis ? SIM.basis + " · " : "") + "기본요금 → 선택약정 할인가", [
         h("div", { class: "chips" }, SIM.carriers.map(function (c, i) { return chip(c.name, (C.simCarrier || 0) === i, function () { C.simCarrier = i; C.simPlan = 0; renderCalc(); }); })),
         h("div", { class: "simrow" }, [sel, add]),
         h("div", { class: "rnote", text: sc.note || "" }),
@@ -389,13 +419,14 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
 
   function compute() {
     var car = carrierObj(), prod = C.product;
-    var r = { lines: [], monthly: 0, install: null, giftNet: null, giftNetCash: null, giftParts: [], giftSim: 0, ded: 0, notes: [] };
+    var r = { lines: [], monthly: 0, wired: 0, simLines: [], simBase: 0, simDisc: 0, install: null, giftNet: null, giftNetCash: null, giftParts: [], giftSim: 0, ded: 0, notes: [] };
     if (car && prod) {
       var base = C.bundle && prod.bundle != null ? prod.bundle : prod.monthly;
       r.lines.push([C.bundle && prod.bundle != null ? "인터넷+TV (결합)" : "인터넷+TV", base]);
-      r.monthly += base;
+      r.wired += base;
       var et = car.policy.extraTv;
-      if (C.extraTv > 0 && et && et.monthly != null) { r.lines.push(["추가 TV " + C.extraTv + "대", et.monthly * C.extraTv]); r.monthly += et.monthly * C.extraTv; }
+      if (C.extraTv > 0 && et && et.monthly != null) { r.lines.push(["추가 TV " + C.extraTv + "대", et.monthly * C.extraTv]); r.wired += et.monthly * C.extraTv; }
+      r.monthly = r.wired;
       var ins = car.policy.install;
       if (ins) {
         if (prod.tv == null) r.install = ins.single;
@@ -417,7 +448,9 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
       var cc = SIM.carriers[ln.carrier], pl = cc.plans[ln.plan];
       var sameBefore = C.sims.slice(0, i).filter(function (x) { return x.carrier === ln.carrier; }).length;
       var g = simGiftFor(cc, pl, sameBefore);
-      r.lines.push(["유심 " + cc.name + " " + pl.name, pl.discount]);
+      r.simLines.push(["유심 " + cc.name + " " + pl.name, pl.price, pl.discount]);
+      r.simBase += pl.price || 0;
+      r.simDisc += pl.discount || 0;
       r.monthly += pl.discount || 0;
       if (g.man != null) r.giftSim += g.man;
     });
@@ -429,7 +462,11 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
     var out = [];
     if (car && prod) out.push("[" + netCh().name + "] " + shortName(car.name) + " " + C.speed + " · " + prod.name);
     r.lines.forEach(function (l) { out.push(l[0] + " " + won(l[1]) + "원"); });
-    if (r.lines.length > 1) out.push("월 합계 " + won(r.monthly) + "원");
+    if (r.simLines.length) {
+      if (r.lines.length > 1) out.push("유선 소계 " + won(r.wired) + "원");
+      r.simLines.forEach(function (l) { out.push(l[0] + " 기본 " + won(l[1]) + "원 → 선택약정 " + won(l[2]) + "원"); });
+      out.push("월 합계 기본요금 기준 " + won(r.wired + r.simBase) + "원 / 선택약정 기준 " + won(r.wired + r.simDisc) + "원 (월 " + won(r.simBase - r.simDisc) + "원 절감)");
+    } else if (r.lines.length > 1) out.push("월 합계 " + won(r.monthly) + "원");
     if (r.install != null) out.push("설치비 " + won(r.install) + "원");
     if (r.giftNet != null || r.giftSim) {
       var tot = (r.giftNet || 0) + r.giftSim - r.ded;
@@ -451,8 +488,23 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
     if (car && prod) resultEl.appendChild(h("div", { class: "pick" }, [h("b", { text: shortName(car.name) + " " + C.speed }), h("br"), prod.name]));
     var m = h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "월요금" })]);
     r.lines.forEach(function (l) { m.appendChild(h("div", { class: "rrow" }, [h("span", { text: l[0] }), h("span", { text: won(l[1]) + "원" })])); });
-    m.appendChild(h("div", { class: "rrow sum big" }, [h("span", { text: "월 합계" }), h("span", { text: won(r.monthly) + "원" })]));
-    resultEl.appendChild(m);
+    if (r.simLines.length) {
+      if (r.lines.length) m.appendChild(h("div", { class: "rrow sum" }, [h("span", { text: "유선 소계" }), h("span", { text: won(r.wired) + "원" })]));
+      resultEl.appendChild(m);
+      var sm = h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "유심 · 기본요금 → 선택약정" }),
+        h("div", { class: "rhead" }, [h("span", { text: "요금제" }), h("span", { text: "기본" }), h("span", { text: "선택약정" })])]);
+      r.simLines.forEach(function (l) { sm.appendChild(h("div", { class: "rrow two" }, [h("span", { text: l[0].replace(/^유심 /, "") }), h("span", { text: won(l[1]) + "원" }), h("span", { text: won(l[2]) + "원" })])); });
+      sm.appendChild(h("div", { class: "rrow two sum" }, [h("span", { text: "유심 소계" }), h("span", { text: won(r.simBase) + "원" }), h("span", { text: won(r.simDisc) + "원" })]));
+      sm.appendChild(h("div", { class: "rrow save" }, [h("span", { text: "선택약정으로 월 절감" }), h("span", { text: "-" + won(r.simBase - r.simDisc) + "원" })]));
+      resultEl.appendChild(sm);
+      var tm = h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "총 합계 (유선 + 유심)" })]);
+      tm.appendChild(h("div", { class: "rrow" }, [h("span", { text: "기본요금 기준" }), h("span", { text: won(r.wired + r.simBase) + "원" })]));
+      tm.appendChild(h("div", { class: "rrow sum big" }, [h("span", { text: "선택약정 기준" }), h("span", { text: won(r.wired + r.simDisc) + "원" })]));
+      resultEl.appendChild(tm);
+    } else {
+      m.appendChild(h("div", { class: "rrow sum big" }, [h("span", { text: "월 합계" }), h("span", { text: won(r.monthly) + "원" })]));
+      resultEl.appendChild(m);
+    }
     if (r.install != null) {
       resultEl.appendChild(h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "설치비" }), h("div", { class: "rrow" }, [h("span", { text: prod.tv == null ? "인터넷 단독" : (C.extraTv ? "인+티+티" : "인+티") }), h("span", { text: won(r.install) + "원" })])]));
     }
@@ -479,7 +531,7 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
     });
     resultEl.appendChild(copy);
     var reset = h("button", { type: "button", class: "reset-btn", text: "처음부터" });
-    reset.addEventListener("click", function () { C.carrier = null; C.speed = null; C.product = null; C.extraTv = 0; C.bundle = false; C.sims = []; C.ded = {}; renderCalc(); });
+    reset.addEventListener("click", function () { C.carrier = null; C.speed = null; C.product = null; C.extraTv = 0; C.bundle = false; C.sims = []; C.ded = {}; C.simOpen = false; renderCalc(); window.scrollTo({ top: 0, behavior: "smooth" }); });
     resultEl.appendChild(reset);
   }
 
