@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LG 재약정 요금</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --ink: #16202a;
+    --ink-2: #5b6876;
+    --ink-3: #8b96a3;
+    --line: #d9dfe6;
+    --line-strong: #b8c2cd;
+    --accent: #0d6b66;
+    --accent-ink: #ffffff;
+    --accent-soft: #e1f0ee;
+    --caution: #b4451f;
+    --caution-soft: #fbeae2;
+    --row-alt: #f8fafb;
+    --head: #eef2f5;
+    --focus: #0d6b66;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f151b;
+      --surface: #171f28;
+      --ink: #e7ecf1;
+      --ink-2: #9aa6b3;
+      --ink-3: #6f7c8a;
+      --line: #28323d;
+      --line-strong: #3b4753;
+      --accent: #3fb3ab;
+      --accent-ink: #07201e;
+      --accent-soft: #19302e;
+      --caution: #f0946f;
+      --caution-soft: #3a2218;
+      --row-alt: #1b242e;
+      --head: #1f2934;
+      --focus: #3fb3ab;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f151b;
+    --surface: #171f28;
+    --ink: #e7ecf1;
+    --ink-2: #9aa6b3;
+    --ink-3: #6f7c8a;
+    --line: #28323d;
+    --line-strong: #3b4753;
+    --accent: #3fb3ab;
+    --accent-ink: #07201e;
+    --accent-soft: #19302e;
+    --caution: #f0946f;
+    --caution-soft: #3a2218;
+    --row-alt: #1b242e;
+    --head: #1f2934;
+    --focus: #3fb3ab;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 36px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* ---------- 요금 버튼 ---------- */
+
+  .launcher {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding-top: 48px;
+  }
+  .launcher.compact { padding-top: 0; flex-direction: row; justify-content: space-between; gap: 16px; }
+  .fare-btn {
+    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
+    font-weight: 900;
+    font-size: 46px;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    padding: 26px 66px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 8px 24px rgba(13, 107, 102, 0.28);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .fare-btn:hover { transform: translateY(-2px); }
+  .fare-btn:active { transform: translateY(0); }
+  .compact .fare-btn { font-size: 22px; padding: 10px 24px; border-radius: 10px; box-shadow: none; }
+  .hint { color: var(--ink-2); font-size: 14px; margin: 0; }
+  .compact .hint { display: none; }
+  .built { color: var(--ink-3); font-size: 13px; margin: 0; }
+  .launcher:not(.compact) .built { display: none; }
+
+  /* ---------- 패널 ---------- */
+  .panel { display: flex; flex-direction: column; gap: 18px; }
+  .panel[hidden] { display: none; }
+  .controls {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .controls h1 { font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.01em; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 10px; padding: 3px; gap: 3px; background: var(--head); }
+  .seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 7px; font-weight: 600; font-size: 14px; color: var(--ink-2); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .view[hidden] { display: none; }
+
+  /* ---------- 재약정 변경 ---------- */
+  .change { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+  .change-left { display: flex; flex-direction: column; gap: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chips .lbl { font-size: 13px; color: var(--ink-2); margin-right: 4px; }
+  .chip {
+    border: 1px solid var(--line-strong); background: var(--surface); padding: 7px 14px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums;
+  }
+  .chip:hover { background: var(--row-alt); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .group-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; padding: 14px 18px 10px; }
+  .group-head h2 { font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif; font-weight: 900; font-size: 22px; }
+  .group-head .meta { color: var(--ink-2); font-size: 13px; }
+  .rows { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+  .crow {
+    display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr) auto; gap: 6px 12px; align-items: center;
+    padding: 12px 18px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); text-align: left; font: inherit; color: inherit;
+  }
+  .crow:last-child { border-bottom: 0; }
+  .crow:hover { background: var(--row-alt); }
+  .crow[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+  .crow .side { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .crow .nm { font-weight: 600; font-size: 14.5px; }
+  .crow .fee { font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; }
+  .crow .fee.old { color: var(--ink-2); }
+  .crow .fee.new { color: var(--accent); }
+  .crow .sub { font-size: 12px; color: var(--ink-3); }
+  .crow .arrow { color: var(--ink-3); font-size: 18px; text-align: center; }
+  .crow .raise { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--caution); white-space: nowrap; font-size: 14px; text-align: right; }
+  .crow .raise small { display: block; font-weight: 500; color: var(--ink-3); font-size: 12px; }
+  .crow .note { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-2); }
+  .crow.final .nm { color: var(--ink-2); }
+  .crow.final .sub { color: var(--accent); font-weight: 600; }
+  .compare {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px;
+    position: sticky; top: 12px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .compare h3 { font-size: 14px; font-weight: 700; color: var(--ink-2); }
+  .compare .empty { color: var(--ink-3); font-size: 14px; }
+  .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-2); }
+  .field select { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font: inherit; }
+  .cmp-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .cmp-table th { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; text-align: right; padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .cmp-table th:first-child { text-align: left; }
+  .cmp-table td { padding: 6px 0; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .cmp-table td:first-child { text-align: left; color: var(--ink-2); white-space: normal; }
+  .cmp-table tr.sum td { font-weight: 800; font-size: 16px; border-bottom: 0; padding-top: 8px; }
+  .cmp-table tr.sum td.new { color: var(--accent); font-size: 20px; }
+  .cmp-table tr.sum td:first-child { color: var(--ink); font-size: 14px; }
+  .diff { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 8px 10px; border-radius: 8px; background: var(--caution-soft); color: var(--caution); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kv { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+  .kv span:first-child { color: var(--ink-2); }
+  .kv span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .rnote { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+  .copy-btn { width: 100%; padding: 10px; border-radius: 9px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+
+  /* ---------- 요금표 / 결합 ---------- */
+  .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .sheet-head { padding: 14px 18px 10px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .sheet-head h2 { font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif; font-weight: 900; font-size: 20px; }
+  .sheet-head .meta { color: var(--ink-2); font-size: 13px; }
+  .table-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
+  table.rates { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 560px; }
+  table.rates th, table.rates td { padding: 9px 14px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  table.rates th { background: var(--head); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-2); }
+  table.rates th.l, table.rates td.l { text-align: left; white-space: normal; font-weight: 500; }
+  table.rates td.dim { color: var(--ink-3); }
+  table.rates tbody tr:nth-child(even) { background: var(--row-alt); }
+  table.rates tbody tr:last-child td { border-bottom: 0; }
+  table.rates td.hl { font-weight: 700; color: var(--accent); }
+  table.rates tr.group td { text-align: left; background: var(--accent-soft); color: var(--accent); font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif; font-weight: 900; font-size: 15px; letter-spacing: 0.04em; padding: 8px 14px; border-top: 2px solid var(--line-strong); }
+  table.grid { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  table.grid td { padding: 8px 12px; border: 1px solid var(--line); vertical-align: top; }
+  table.grid tr:first-child td { background: var(--head); font-weight: 600; color: var(--ink-2); font-size: 12.5px; }
+  table.grid td:first-child { font-weight: 600; white-space: nowrap; }
+  .views { display: flex; flex-direction: column; gap: 18px; }
+  .foot { color: var(--ink-3); font-size: 13px; text-align: center; }
+
+  @media (max-width: 860px) {
+    .change { grid-template-columns: 1fr; }
+    .compare { position: static; }
+    .crow { grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr); }
+    .crow .raise { grid-column: 1 / -1; text-align: left; }
+    .crow .raise small { display: inline; margin-left: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <section class="launcher" id="launcher">
+    <button class="fare-btn" id="fareBtn" type="button" aria-expanded="false" aria-controls="panel">요금</button>
+    <p class="hint">버튼을 누르면 LG 재약정 요금 안내가 나옵니다.</p>
+    <p class="built">기준 자료 반영일 2026.09.11</p>
+  </section>
+
+  <section class="panel" id="panel" hidden>
+    <div class="controls">
+      <h1>LG 재약정 요금</h1>
+      <div class="seg" id="viewSeg" role="group" aria-label="보기 선택">
+        <button type="button" data-view="change" aria-pressed="true">재약정 변경</button>
+        <button type="button" data-view="rates" aria-pressed="false">요금표</button>
+        <button type="button" data-view="bundle" aria-pressed="false">결합 할인</button>
+      </div>
+    </div>
+
+    <div class="view" id="view-change">
+      <div class="change">
+        <div class="change-left">
+          <div class="chips" id="speedChips"><span class="lbl">속도</span></div>
+          <div id="groups"></div>
+        </div>
+        <aside class="compare" id="compare"></aside>
+      </div>
+    </div>
+
+    <div class="view views" id="view-rates" hidden></div>
+    <div class="view views" id="view-bundle" hidden></div>
+    <p class="foot">단위: 원 (월). 변경 요금 = 기존 요금 + 요금 인상액. 인터넷 요금표의 3년약정 열은 TV 결합 기준입니다.</p>
+  </section>
+</div>
+
+<script>
+var LG = {"tv":[{"name":"베이직(판매종료)","channels":"211개","y3":12100,"y2":13750,"y1":15950,"none":17600},{"name":"프리미엄","channels":"254개","y3":16500,"y2":18150,"y1":20350,"none":22000},{"name":"프라임라이트(VOD쿠폰5.500원)","channels":"259개","y3":18700,"y2":22550,"y1":25025,"none":27500},{"name":"프리미엄내맘대로","channels":"259개","y3":27500,"y2":30250,"y1":33550,"none":36300},{"name":"프리미엄넷플릭스HD","channels":"259개","y3":26300,"y2":28500,"y1":30700,"none":34000},{"name":"프리미엄넷플릭스UHD","channels":"259개","y3":28800,"y2":31000,"y1":33200,"none":36500},{"name":"고급형","channels":"232개","y3":15400,"y2":17050,"y1":19250,"none":20900},{"name":"일반형(판매종료)","channels":"190개","y3":10890,"y2":12540,"y1":14750,"none":16390},{"name":"VOD고급형","channels":"232개","y3":19800,"y2":null,"y1":null,"none":30690},{"name":"보급형","channels":"","y3":7700,"y2":null,"y1":null,"none":13200},{"name":"HD라이트형","channels":"","y3":9900,"y2":null,"y1":null,"none":15400},{"name":"실속형","channels":"217개","y3":13200,"y2":null,"y1":null,"none":22000},{"name":"기본형","channels":"225개","y3":14300,"y2":null,"y1":null,"none":23100}],"stb":[{"name":"UHD 셋탑박스","y3":4400,"y2":5500,"y1":7700,"none":9900},{"name":"고급형 셋탑박스(아날로그TV전용)","y3":3300,"y2":4400,"y1":6600,"none":8800}],"internet":[{"name":"19광랜","speed":"100M","y3tv":18700,"y2":24970,"y1":28930,"none":36300},{"name":"광랜안심","speed":"100M","y3tv":20900,"y2":27170,"y1":33880,"none":39600},{"name":"와이파이기본-광랜안심","speed":"100M","y3tv":22000,"y2":28600,"y1":34100,"none":42900},{"name":"스마트광랜안심","speed":"100M","y3tv":24200,"y2":34100,"y1":42900,"none":51700},{"name":"프리미엄광랜","speed":"100M","y3tv":25300,"y2":null,"y1":null,"none":null},{"name":"광랜25","speed":"100M","y3tv":27500,"y2":null,"y1":null,"none":null},{"name":"기가슬림(광기가슬림)","speed":"500M","y3tv":25300,"y2":36300,"y1":40700,"none":46200},{"name":"기가슬림안심","speed":"500M","y3tv":26400,"y2":39050,"y1":44000,"none":49500},{"name":"와이파이기본-기가슬림안심","speed":"500M","y3tv":27500,"y2":41580,"y1":49500,"none":56100},{"name":"스마트기가슬림안심","speed":"500M","y3tv":29700,"y2":42900,"y1":51700,"none":60500},{"name":"프리미엄기가슬림안심","speed":"500M","y3tv":31900,"y2":null,"y1":null,"none":null},{"name":"기가인터넷","speed":"1G","y3tv":30800,"y2":42900,"y1":48400,"none":55000},{"name":"기가인터넷안심","speed":"1G","y3tv":31900,"y2":45100,"y1":50600,"none":55000},{"name":"와이파이기본-기가안심","speed":"1G","y3tv":33000,"y2":47300,"y1":57200,"none":64900},{"name":"스마트기가안심","speed":"1G","y3tv":35200,"y2":46750,"y1":55825,"none":64900},{"name":"프리미엄기가안심","speed":"1G","y3tv":37400,"y2":null,"y1":null,"none":null}],"changes":[{"speed":"100M","title":"광랜요금제","rows":[{"cur":"100M(19광랜)","curFee":20900,"launched":"2012년출시","to":"프리미엄(100M)","raise":4400,"newFee":25300,"install":22000,"note":"클락3 설치(추가와파 불가) *클락->네이버 아이디 필수"},{"cur":"와이파이기본제공요금제(100M)","curFee":22000,"launched":"2016년출시","to":"프리미엄(100M)","raise":3300,"newFee":25300,"install":22000,"note":""},{"cur":"스마트광랜안심(100M)","curFee":24200,"launched":"2020년출시","to":"프리미엄안심(100M)","raise":1100,"newFee":25300,"install":22000,"note":"클락3교체(기존클락회수)"},{"cur":"프리미엄안심(100M)","curFee":25300,"launched":"2023년출시","to":"프리미엄안심보상(100M)","raise":2200,"newFee":27500,"install":null,"note":"기존장비 유지(설치없이 개통)"},{"cur":"프리미엄안심보상(100M)","curFee":27500,"launched":"2025년출시","to":null,"raise":null,"newFee":null,"install":null,"note":""}]},{"speed":"500M","title":"기가슬림요금제","rows":[{"cur":"광기가슬림(500M)","curFee":25300,"launched":"2015년출시","to":"프리미엄(500M)","raise":6600,"newFee":31900,"install":22000,"note":"클락3(추가와파) 설치"},{"cur":"와이파이기본기가슬림요금제(500M)","curFee":27500,"launched":"2017년출시","to":"프리미엄(500M)","raise":4400,"newFee":31900,"install":22000,"note":""},{"cur":"스마트기가슬림안심(500M)","curFee":29700,"launched":"2020년출시","to":"프리미엄(500M)","raise":2200,"newFee":31900,"install":22000,"note":"클락3교체 or 추가와파설치(기존클락회수)"},{"cur":"스마트2최대(500M)","curFee":29700,"launched":"","to":"프리미엄(500M)","raise":2200,"newFee":31900,"install":22000,"note":"클락3 교체(기존클락회수) (와파6 2대 사용중일경우 유지가능)"},{"cur":"프리미엄안심(500M)","curFee":31900,"launched":"2023년출시","to":"프리미엄안심보상(500M)","raise":2200,"newFee":34100,"install":null,"note":"기존장비 유지(설치없이 개통)"},{"cur":"프리미엄안심보상(500M)","curFee":34100,"launched":"2025년출시","to":null,"raise":null,"newFee":null,"install":null,"note":""}]},{"speed":"1G","title":"기가요금제","rows":[{"cur":"광기가(1G)","curFee":30800,"launched":"2015년출시","to":"프리미엄(1G)","raise":6600,"newFee":37400,"install":22000,"note":"클락3(추가와파) 설치"},{"cur":"와이파이기본기가요금제(1G)","curFee":33000,"launched":"2017년출시","to":"프리미엄(1G)","raise":4400,"newFee":37400,"install":22000,"note":""},{"cur":"스마트기가안심(1G)","curFee":35200,"launched":"2020년출시","to":"프리미엄(1G)","raise":2200,"newFee":37400,"install":22000,"note":"클락3교체 or 추가와파설치(기존클락회수)"},{"cur":"스마트2최대(1G)","curFee":35200,"launched":"","to":"프리미엄(1G)","raise":2200,"newFee":37400,"install":22000,"note":"클락3 교체(기존클락회수) (와파6 2대 사용중일경우 유지가능)"},{"cur":"프리미엄안심(1G)","curFee":37400,"launched":"2023년출시","to":"프리미엄안심보상(1G)","raise":2200,"newFee":39600,"install":null,"note":"기존장비 유지(설치없이 개통)"},{"cur":"프리미엄안심보상(1G)","curFee":39600,"launched":"2025년출시","to":null,"raise":null,"newFee":null,"install":null,"note":""}]}],"bundles":[{"title":"가족무한사랑 유무선결합(100메가 광랜)","rows":[[{"c":2,"t":"결합구분","span":1},{"c":3,"t":"모바일요금제 데이터59이상 없는경우","span":3},{"c":6,"t":"모바일요금제 데이터59이상 있는경우","span":3}],[{"c":2,"t":"할인","span":1},{"c":3,"t":"모바일 요금할인","span":1},{"c":4,"t":"인터넷 요금할인","span":1},{"c":5,"t":"총요금할인","span":1},{"c":6,"t":"모바일 요금제","span":1},{"c":7,"t":"인터넷 요금할인","span":1},{"c":8,"t":"총요금할인","span":1}],[{"c":2,"t":"1명","span":1},{"c":4,"t":"5,500원","span":1},{"c":5,"t":"5,500원","span":1},{"c":6,"t":"5,500원","span":1},{"c":7,"t":"5,500원","span":1},{"c":8,"t":"11,000원","span":1}],[{"c":2,"t":"2명","span":1},{"c":3,"t":"5,500원","span":1},{"c":5,"t":"11,000원","span":1},{"c":6,"t":"16,610원","span":1},{"c":8,"t":"22,110원","span":1}],[{"c":2,"t":"3명","span":1},{"c":3,"t":"16,610원","span":1},{"c":5,"t":"22,110원","span":1},{"c":6,"t":"22,110원","span":1},{"c":8,"t":"27,610원","span":1}],[{"c":2,"t":"4명","span":1},{"c":3,"t":"22,110원","span":1},{"c":5,"t":"27,610원","span":1},{"c":6,"t":"27,610원","span":1},{"c":8,"t":"33,110원","span":1}],[{"c":2,"t":"5명","span":1},{"c":3,"t":"27,610원","span":1},{"c":5,"t":"33,110원","span":1},{"c":6,"t":"33,110원","span":1},{"c":8,"t":"38,610원","span":1}],[{"c":2,"t":"결합범위","span":1},{"c":3,"t":"본인,배우자,부모,조부모,자녀,형제,자매,배우자의(부모,형제,자매)사위,며느리","span":6}],[{"c":2,"t":"필요서류","span":1},{"c":3,"t":"가입자의 주민등록증,가족증빙서류/설치후 고객센터 또는 대리점 신청","span":6}]]},{"title":"가족무한사랑 유무선결합(500메가 이상)","rows":[[{"c":2,"t":"결합구분","span":1},{"c":3,"t":"모바일요금제 데이터59이상 없는경우","span":3},{"c":6,"t":"모바일요금제 데이터59이상 있는경우","span":3}],[{"c":2,"t":"할인","span":1},{"c":3,"t":"모바일 요금할인","span":1},{"c":4,"t":"인터넷 요금할인","span":1},{"c":5,"t":"총요금할인","span":1},{"c":6,"t":"모바일 요금제","span":1},{"c":7,"t":"인터넷 요금할인","span":1},{"c":8,"t":"총요금할인","span":1}],[{"c":2,"t":"1명","span":1},{"c":4,"t":"5,500원","span":1},{"c":5,"t":"5,500원","span":1},{"c":6,"t":"5,500원","span":1},{"c":7,"t":"5,500원","span":1},{"c":8,"t":"11,000원","span":1}],[{"c":2,"t":"2명","span":1},{"c":3,"t":"5,500원","span":1},{"c":5,"t":"11,000원","span":1},{"c":6,"t":"16,610원","span":1},{"c":7,"t":"11,000원","span":1},{"c":8,"t":"27,610원","span":1}],[{"c":2,"t":"3명","span":1},{"c":3,"t":"16,610원","span":1},{"c":5,"t":"22,110원","span":1},{"c":6,"t":"22,110원","span":1},{"c":8,"t":"33,110원","span":1}],[{"c":2,"t":"4명","span":1},{"c":3,"t":"22,110원","span":1},{"c":5,"t":"27,610원","span":1},{"c":6,"t":"27,610원","span":1},{"c":8,"t":"38,610원","span":1}],[{"c":2,"t":"5명","span":1},{"c":3,"t":"27,610원","span":1},{"c":5,"t":"33,110원","span":1},{"c":6,"t":"33,110원","span":1},{"c":8,"t":"44,110원","span":1}]]},{"title":"한방에 홈결합(100메가 광랜)","rows":[[{"c":2,"t":"스마트형요금제 62미만","span":1},{"c":3,"t":"1명-62(순액 44)이상","span":2},{"c":5,"t":"2명","span":2},{"c":7,"t":"2명-80(순액59.9) 1명포함","span":2}],[{"c":2,"t":"한방에 yo 결합만가능","span":1},{"c":3,"t":"인터넷 5,500원 / 모바일 3,300원 (티비결합시 모바일 2,200원 추가할인)","span":2},{"c":5,"t":"인터넷 5,500원 모바일 5,500원 (총할인 11,000원)","span":2},{"c":7,"t":"인터넷 5,500원 모바일 15,455원 (총할인 20,955원)","span":2}],[{"c":3,"t":"스마트형 요금제 3인이상","span":6}],[{"c":3,"t":"인터넷 11,000원/모바일 15,455원(총할인 20,955원)","span":6}]]},{"title":"한방에 홈결합(500메가 이상)","rows":[[{"c":2,"t":"스마트형요금제 62미만","span":1},{"c":3,"t":"1명-62(순액 44)이상","span":2},{"c":5,"t":"2명","span":2},{"c":7,"t":"2명-80(순액59.9) 1명포함","span":2}],[{"c":2,"t":"한방에 yo 결합만가능","span":1},{"c":3,"t":"인터넷 5,500원 / 모바일 3,300원 (티비결합시 모바일 2,200원 추가할인)","span":2},{"c":5,"t":"인터넷 5,500원 모바일 5,500원 (총할인 11,000원)","span":2},{"c":7,"t":"인터넷 11,000원 모바일 14,245원 (총할인 25,245원)","span":2}],[{"c":3,"t":"스마트형 요금제 3인이상","span":3},{"c":6,"t":"3명-80(순액59.9) 1명포함","span":3}],[{"c":3,"t":"인터넷 11,000원/모바일 9,955원 (총할인 20,955원)","span":3},{"c":6,"t":"인터넷 11,000원/모바일 14,355원 (총할인 25,355원)","span":3}]]},{"title":"참쉬운 가족결합","rows":[[{"c":2,"t":"모바일 결합 회선수","span":1},{"c":3,"t":"모바일 요금에 따라 할인(최대 10회선)","span":3},{"c":6,"t":"인터넷 속도에 따라 할인(최대 3회선)","span":3}],[{"c":3,"t":"69,000원↓","span":1},{"c":4,"t":"69,000원↑","span":1},{"c":5,"t":"88,000원↑","span":1},{"c":6,"t":"100M","span":1},{"c":7,"t":"500M","span":1},{"c":8,"t":"1G","span":1}],[{"c":2,"t":"1인","span":1},{"c":3,"t":"모바일 1회선 결합은 할인 없음","span":3},{"c":6,"t":"5,500원","span":1},{"c":7,"t":"9,900원","span":1},{"c":8,"t":"13,200원","span":1}],[{"c":2,"t":"2인","span":1},{"c":3,"t":"2,200원","span":1},{"c":4,"t":"3,300원","span":1},{"c":5,"t":"4,400원","span":1}],[{"c":2,"t":"3인","span":1},{"c":3,"t":"3,300원","span":1},{"c":4,"t":"5,500원","span":1},{"c":5,"t":"6,600원","span":1}],[{"c":2,"t":"4~10인","span":1},{"c":3,"t":"4,400원","span":1},{"c":4,"t":"6,600원","span":1},{"c":5,"t":"8,800원","span":1}]]},{"title":"가족끼리 인터넷 결함(가끼모결합/패밀리결합)","rows":[[{"c":2,"t":"기존 본인명의 혹은 가족명의로 인터넷을 사용하던 고객이 추가로 인터넷을 가입할 경우 가족끼리 인터넷 결합으로 결합하여 할인 받을수 있다.","span":7}]]}]};
+</script>
+<script>
+(function () {
+  var el = function (id) { return document.getElementById(id); };
+  function won(n) { return n == null ? "-" : n.toLocaleString("ko-KR"); }
+  function h(tag, attrs, children) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === "class") node.className = attrs[k];
+      else if (k === "text") node.textContent = attrs[k];
+      else node.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { if (c) node.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return node;
+  }
+  var launcher = el("launcher"), fareBtn = el("fareBtn"), panel = el("panel");
+  var groupsEl = el("groups"), speedChips = el("speedChips"), compareEl = el("compare");
+  var S = { speed: "all", sel: null, tv: -1, stb: -1, term: "y3" };
+  var TERMS = [["y3", "3년약정"], ["y2", "2년약정"], ["y1", "1년약정"], ["none", "무약정"]];
+
+  function wonStr(n) { return n == null ? "-" : won(n) + "원"; }
+  function signed(n) { return (n > 0 ? "+" : n < 0 ? "-" : "") + won(Math.abs(n)) + "원"; }
+
+  /* ---- 보기 전환 ---- */
+  var viewSeg = el("viewSeg");
+  Array.prototype.forEach.call(viewSeg.querySelectorAll("button"), function (b) {
+    b.addEventListener("click", function () {
+      Array.prototype.forEach.call(viewSeg.querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", "false"); });
+      b.setAttribute("aria-pressed", "true");
+      ["change", "rates", "bundle"].forEach(function (v) { el("view-" + v).hidden = v !== b.dataset.view; });
+    });
+  });
+
+  /* ---- 재약정 변경 ---- */
+  function buildSpeedChips() {
+    var items = [{ key: "all", label: "전체" }].concat(LG.changes.map(function (g) { return { key: g.speed, label: g.speed }; }));
+    items.forEach(function (it) {
+      var b = h("button", { type: "button", class: "chip", "aria-pressed": String(S.speed === it.key), text: it.label });
+      b.addEventListener("click", function () {
+        S.speed = it.key;
+        Array.prototype.forEach.call(speedChips.querySelectorAll(".chip"), function (c) { c.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        renderGroups();
+      });
+      speedChips.appendChild(b);
+    });
+  }
+
+  function renderGroups() {
+    groupsEl.innerHTML = "";
+    groupsEl.style.display = "flex"; groupsEl.style.flexDirection = "column"; groupsEl.style.gap = "12px";
+    LG.changes.forEach(function (g) {
+      if (S.speed !== "all" && S.speed !== g.speed) return;
+      var sec = h("section", { class: "group" }, [
+        h("div", { class: "group-head" }, [h("h2", { text: g.speed + " " + g.title }), h("span", { class: "meta", text: "현재 요금제 " + g.rows.length + "종 · 왼쪽 기존 → 오른쪽 변경" })])
+      ]);
+      var rows = h("div", { class: "rows" });
+      g.rows.forEach(function (r) {
+        var isFinal = !r.to;
+        var btn = h("button", { type: "button", class: "crow" + (isFinal ? " final" : ""), "aria-pressed": String(S.sel === r) }, [
+          h("div", { class: "side" }, [h("span", { class: "nm", text: r.cur }), h("span", { class: "fee old", text: wonStr(r.curFee) }), h("span", { class: "sub", text: r.launched || "" })]),
+          h("div", { class: "arrow", text: isFinal ? "" : "\u2192" }),
+          isFinal
+            ? h("div", { class: "side" }, [h("span", { class: "sub", text: "최신 요금제 · 변경 대상 아님" })])
+            : h("div", { class: "side" }, [h("span", { class: "nm", text: r.to }), h("span", { class: "fee new", text: wonStr(r.newFee) }), h("span", { class: "sub", text: r.install != null ? "설치비 " + wonStr(r.install) : "설치 없음" })]),
+          isFinal ? h("div") : h("div", { class: "raise" }, ["+" + won(r.raise) + "원", h("small", { text: "월 인상" })]),
+          r.note ? h("div", { class: "note", text: r.note }) : null
+        ]);
+        btn.addEventListener("click", function () { S.sel = r; S.selGroup = g; renderGroups(); renderCompare(); if (window.innerWidth <= 860) compareEl.scrollIntoView({ behavior: "smooth", block: "start" }); });
+        rows.appendChild(btn);
+      });
+      sec.appendChild(rows);
+      groupsEl.appendChild(sec);
+    });
+  }
+
+  function selectField(label, options, value, onChange) {
+    var sel = h("select");
+    options.forEach(function (o) { var op = h("option", { value: String(o[0]), text: o[1] }); if (String(o[0]) === String(value)) op.selected = true; sel.appendChild(op); });
+    sel.addEventListener("change", function () { onChange(sel.value); });
+    return h("label", { class: "field" }, [label, sel]);
+  }
+
+  function renderCompare() {
+    compareEl.innerHTML = "";
+    compareEl.appendChild(h("h3", { text: "기존 · 변경 월요금 비교" }));
+    var r = S.sel;
+    if (!r) { compareEl.appendChild(h("div", { class: "empty", text: "왼쪽에서 현재 사용 중인 요금제를 누르면 기존 요금과 변경 요금이 나란히 나옵니다." })); return; }
+    var tvOpts = [[-1, "TV 없음"]].concat(LG.tv.map(function (t, i) { return [i, t.name + (t[S.term] != null ? " · " + won(t[S.term]) + "원" : "")]; }));
+    var stbOpts = [[-1, "셋탑 없음"]].concat(LG.stb.map(function (t, i) { return [i, t.name + " · " + won(t[S.term]) + "원"]; }));
+    compareEl.appendChild(selectField("TV 요금제", tvOpts, S.tv, function (v) { S.tv = Number(v); renderCompare(); }));
+    compareEl.appendChild(selectField("셋탑박스", stbOpts, S.stb, function (v) { S.stb = Number(v); renderCompare(); }));
+    compareEl.appendChild(selectField("TV·셋탑 약정", TERMS, S.term, function (v) { S.term = v; renderCompare(); }));
+
+    var tv = S.tv >= 0 ? LG.tv[S.tv] : null, stb = S.stb >= 0 ? LG.stb[S.stb] : null;
+    var tvFee = tv ? tv[S.term] : 0, stbFee = stb ? stb[S.term] : 0;
+    var isFinal = !r.to;
+    var oldTotal = (r.curFee || 0) + (tvFee || 0) + (stbFee || 0);
+    var newTotal = isFinal ? null : (r.newFee || 0) + (tvFee || 0) + (stbFee || 0);
+    var tbl = h("table", { class: "cmp-table" }, [
+      h("thead", null, [h("tr", null, [h("th", { text: "항목" }), h("th", { text: "기존" }), h("th", { text: "변경" })])])
+    ]);
+    var tb = h("tbody");
+    tb.appendChild(h("tr", null, [h("td", { text: "인터넷 " + r.cur + (isFinal ? "" : " → " + r.to) }), h("td", { text: wonStr(r.curFee) }), h("td", { class: "new", text: isFinal ? "-" : wonStr(r.newFee) })]));
+    if (tv) tb.appendChild(h("tr", null, [h("td", { text: "TV " + tv.name }), h("td", { text: tvFee != null ? wonStr(tvFee) : "해당 약정 없음" }), h("td", { text: tvFee != null ? wonStr(tvFee) : "-" })]));
+    if (stb) tb.appendChild(h("tr", null, [h("td", { text: stb.name }), h("td", { text: wonStr(stbFee) }), h("td", { text: wonStr(stbFee) })]));
+    tb.appendChild(h("tr", { class: "sum" }, [h("td", { text: "월 합계" }), h("td", { text: wonStr(oldTotal) }), h("td", { class: "new", text: isFinal ? "-" : wonStr(newTotal) })]));
+    tbl.appendChild(tb);
+    compareEl.appendChild(tbl);
+    if (!isFinal) {
+      compareEl.appendChild(h("div", { class: "diff" }, [h("span", { text: "월 차이" }), h("span", { text: signed(newTotal - oldTotal) })]));
+      compareEl.appendChild(h("div", { class: "kv" }, [h("span", { text: "설치비" }), h("span", { text: r.install != null ? wonStr(r.install) : "없음 (기존장비 유지)" })]));
+      if (r.note) compareEl.appendChild(h("div", { class: "rnote", text: "참고: " + r.note }));
+    } else {
+      compareEl.appendChild(h("div", { class: "rnote", text: "이미 최신 요금제라 재약정 시 변경되는 요금제가 없습니다." }));
+    }
+    var copy = h("button", { type: "button", class: "copy-btn", text: "결과 복사" });
+    copy.addEventListener("click", function () {
+      var lines = ["[LG 재약정] " + r.cur + (isFinal ? " (최신 요금제)" : " → " + r.to)];
+      lines.push("인터넷 기존 " + wonStr(r.curFee) + (isFinal ? "" : " → 변경 " + wonStr(r.newFee) + " (+" + won(r.raise) + "원)"));
+      if (tv) lines.push("TV " + tv.name + " " + wonStr(tvFee) + " (" + TERMS.filter(function (t) { return t[0] === S.term; })[0][1] + ")");
+      if (stb) lines.push(stb.name + " " + wonStr(stbFee));
+      lines.push("월 합계 기존 " + wonStr(oldTotal) + (isFinal ? "" : " → 변경 " + wonStr(newTotal) + " (" + signed(newTotal - oldTotal) + ")"));
+      if (!isFinal) lines.push("설치비 " + (r.install != null ? wonStr(r.install) : "없음"));
+      if (r.note) lines.push("참고: " + r.note);
+      var t = lines.join("\n");
+      var done = function () { copy.textContent = "복사됨"; setTimeout(function () { copy.textContent = "결과 복사"; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { window.prompt("아래 내용을 복사하세요", t); });
+      else window.prompt("아래 내용을 복사하세요", t);
+    });
+    compareEl.appendChild(copy);
+  }
+
+  /* ---- 요금표 ---- */
+  function ratesTable(headers, rows) {
+    var thead = h("thead", null, [h("tr", null, headers.map(function (t, i) { return h("th", { class: i === 0 ? "l" : "", text: t }); }))]);
+    var tbody = h("tbody");
+    rows.forEach(function (cells) {
+      if (cells.group) { tbody.appendChild(h("tr", { class: "group" }, [h("td", { colspan: String(headers.length), text: cells.group })])); return; }
+      tbody.appendChild(h("tr", null, cells.map(function (c, i) {
+        if (i === 0) return h("td", { class: "l", text: c });
+        if (typeof c === "object" && c) return h("td", { class: c.cls, text: c.text });
+        return h("td", { class: c == null ? "dim" : "", text: c == null ? "-" : (typeof c === "number" ? won(c) : c) });
+      })));
+    });
+    return h("div", { class: "table-wrap" }, [h("table", { class: "rates" }, [thead, tbody])]);
+  }
+  function renderRates() {
+    var v = el("view-rates");
+    v.appendChild(h("section", { class: "sheet" }, [
+      h("div", { class: "sheet-head" }, [h("h2", { text: "LG TV 요금표" }), h("span", { class: "meta", text: "약정 기간별 월요금" })]),
+      ratesTable(["요금제", "채널 수", "3년약정", "2년약정", "1년약정", "무약정"], LG.tv.map(function (t) { return [t.name, t.channels || null, t.y3, t.y2, t.y1, t.none]; }))
+    ]));
+    v.appendChild(h("section", { class: "sheet" }, [
+      h("div", { class: "sheet-head" }, [h("h2", { text: "셋탑박스" }), h("span", { class: "meta", text: "약정 기간별 월 임대료" })]),
+      ratesTable(["셋탑", "3년약정", "2년약정", "1년약정", "무약정"], LG.stb.map(function (t) { return [t.name, t.y3, t.y2, t.y1, t.none]; }))
+    ]));
+    var rows = [], last = null;
+    LG.internet.forEach(function (t) { if (t.speed !== last) { rows.push({ group: t.speed }); last = t.speed; } rows.push([t.name, { cls: "hl", text: t.y3tv == null ? "-" : won(t.y3tv) }, t.y2, t.y1, t.none]); });
+    v.appendChild(h("section", { class: "sheet" }, [
+      h("div", { class: "sheet-head" }, [h("h2", { text: "LG 인터넷 요금표" }), h("span", { class: "meta", text: "3년약정 열은 TV 결합 기준" })]),
+      ratesTable(["요금제", "3년약정+TV", "2년약정", "1년약정", "무약정"], rows)
+    ]));
+  }
+
+  /* ---- 결합 할인 ---- */
+  function renderBundles() {
+    var v = el("view-bundle");
+    LG.bundles.forEach(function (b) {
+      var tbl = h("table", { class: "grid" });
+      b.rows.forEach(function (line) {
+        var tr = h("tr");
+        line.forEach(function (c) { var td = h("td", { text: c.t }); if (c.span > 1) td.colSpan = c.span; tr.appendChild(td); });
+        tbl.appendChild(tr);
+      });
+      v.appendChild(h("section", { class: "sheet" }, [
+        h("div", { class: "sheet-head" }, [h("h2", { text: b.title || "안내" })]),
+        h("div", { class: "table-wrap" }, [tbl])
+      ]));
+    });
+  }
+
+  fareBtn.addEventListener("click", function () {
+    var open = panel.hidden;
+    panel.hidden = !open;
+    fareBtn.setAttribute("aria-expanded", String(open));
+    launcher.classList.toggle("compact", open);
+    if (open) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  buildSpeedChips();
+  renderGroups();
+  renderCompare();
+  renderRates();
+  renderBundles();
+})();
+</script>
+</body>
+</html>

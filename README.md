@@ -5,6 +5,7 @@
 - 원콜 단가표: https://aryme76-bot.github.io/yogeum/onecall/
 - 요금 계산기 (CPA·챗봇 + 인콜 유심): https://aryme76-bot.github.io/yogeum/calc/
 - 원콜 요금 계산기: https://aryme76-bot.github.io/yogeum/onecall/calc/
+- LG 재약정 요금: https://aryme76-bot.github.io/yogeum/lg/
 
 `index.html`을 크롬으로 열고 **요금** 버튼을 누르면 통신사별·속도별 단가표가 나옵니다.
 
