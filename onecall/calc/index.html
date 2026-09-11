@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>원콜 요금 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --ink: #16202a;
+    --ink-2: #5b6876;
+    --ink-3: #8b96a3;
+    --line: #d9dfe6;
+    --line-strong: #b8c2cd;
+    --accent: #0d6b66;
+    --accent-ink: #ffffff;
+    --accent-soft: #e1f0ee;
+    --caution: #b4451f;
+    --caution-soft: #fbeae2;
+    --row-alt: #f8fafb;
+    --head: #eef2f5;
+    --focus: #0d6b66;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f151b;
+      --surface: #171f28;
+      --ink: #e7ecf1;
+      --ink-2: #9aa6b3;
+      --ink-3: #6f7c8a;
+      --line: #28323d;
+      --line-strong: #3b4753;
+      --accent: #3fb3ab;
+      --accent-ink: #07201e;
+      --accent-soft: #19302e;
+      --caution: #f0946f;
+      --caution-soft: #3a2218;
+      --row-alt: #1b242e;
+      --head: #1f2934;
+      --focus: #3fb3ab;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f151b;
+    --surface: #171f28;
+    --ink: #e7ecf1;
+    --ink-2: #9aa6b3;
+    --ink-3: #6f7c8a;
+    --line: #28323d;
+    --line-strong: #3b4753;
+    --accent: #3fb3ab;
+    --accent-ink: #07201e;
+    --accent-soft: #19302e;
+    --caution: #f0946f;
+    --caution-soft: #3a2218;
+    --row-alt: #1b242e;
+    --head: #1f2934;
+    --focus: #3fb3ab;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 36px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* ---------- 상단 ---------- */
+  .head {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+  .head h1 { font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.01em; }
+  .head .built { color: var(--ink-3); font-size: 13px; margin: 0; }
+  .head a { color: var(--accent); font-size: 13px; }
+
+  /* ---------- 계산 ---------- */
+  #calc { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .step h3 { font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .step h3 .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700;
+  }
+  .step h3 small { font-weight: 500; color: var(--ink-3); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip:hover { background: var(--row-alt); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .chip:disabled { opacity: 0.45; cursor: not-allowed; }
+  .tool { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); font-size: 14px; font-weight: 500; }
+  .tool:hover { background: var(--row-alt); }
+  .plist { display: flex; flex-direction: column; gap: 6px; }
+  .popt {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 2px 14px; align-items: center;
+    padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface);
+    text-align: left; font-size: 14px;
+  }
+  .popt:hover { background: var(--row-alt); }
+  .popt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .popt .nm { font-weight: 500; }
+  .popt .sub { grid-column: 1 / -1; font-size: 12px; color: var(--ink-2); }
+  .popt .amt { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .popt .gift { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .simrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .simrow select { flex: 1 1 220px; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font: inherit; }
+  .lines { display: flex; flex-direction: column; gap: 6px; }
+  .line {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 10px; align-items: center;
+    padding: 8px 12px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; background: var(--row-alt);
+  }
+  .line .amt { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .line .gift { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .line .gift.no { color: var(--ink-3); font-weight: 500; }
+  .del { border: 0; background: transparent; color: var(--caution); font-size: 18px; line-height: 1; padding: 4px 8px; border-radius: 6px; }
+  .del:hover { background: var(--caution-soft); }
+  .checks { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .checks label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+  .checks input { margin-top: 3px; }
+  .rnote { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+  .result {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    position: sticky;
+    top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .result h3 { font-size: 14px; font-weight: 700; color: var(--ink-2); }
+  .result .pick { font-size: 14px; line-height: 1.5; }
+  .rsec { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .rsec .lbl { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .rrow { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+  .rrow span:first-child { color: var(--ink-2); }
+  .rrow span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .rrow.sum { border-top: 1px dashed var(--line-strong); padding-top: 6px; margin-top: 2px; }
+  .rrow.sum span:first-child { color: var(--ink); font-weight: 700; }
+  .rrow.big span:last-child { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .rrow.minus span:last-child { color: var(--caution); }
+  .result .empty { color: var(--ink-3); font-size: 14px; padding: 8px 0; }
+  .copy-btn { width: 100%; padding: 10px; border-radius: 9px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .reset-btn { width: 100%; padding: 8px; border-radius: 9px; border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; }
+  @media (max-width: 860px) {
+    #calc { grid-template-columns: 1fr; }
+    .result { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="head">
+    <h1>원콜 요금 계산기</h1>
+    <p class="built">기준 자료 반영일 2026.09.11 · <a href="../" id="backLink">단가표 보기</a></p>
+  </header>
+  <section id="calc" aria-label="요금 계산">
+    <div class="steps" id="steps"></div>
+    <aside class="result" id="result"></aside>
+  </section>
+</div>
+
+<script>
+var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carriers":[{"name":"LG(101)","products":[{"name":"와이파이광랜100M+AP","internet":22000,"tv":null,"stb":null,"monthly":22000,"bundle":16500,"gift":{"raw":"현금15만원 (이중요금포함)","parts":[["현금",15]],"total":15,"tags":["이중요금포함"]}},{"name":"와이파이기가슬림500M+AP","internet":33000,"tv":null,"stb":null,"monthly":33000,"bundle":23100,"gift":{"raw":"현금23만원 (이중요금포함)","parts":[["현금",23]],"total":23,"tags":["이중요금포함"]}},{"name":"와이파이기가안심1G+AP","internet":38500,"tv":null,"stb":null,"monthly":38500,"bundle":25300,"gift":{"raw":"현금23만원 (이중요금포함)","parts":[["현금",23]],"total":23,"tags":["이중요금포함"]}},{"name":"와이파이광랜100+프리미엄(UHD4)+AP+클락","internet":22000,"tv":16500,"stb":4400,"monthly":42900,"bundle":37400,"gift":{"raw":"현금35만원 (이중요금포함)","parts":[["현금",35]],"total":35,"tags":["이중요금포함"]}},{"name":"프리미엄기가슬림500+프리미엄(UHD4)+AP+클락","internet":31900,"tv":16500,"stb":4400,"monthly":52800,"bundle":42900,"gift":{"raw":"현금32+이모8=총40만원+페이백+이중요금","parts":[["현금",32],["이모",8]],"total":40,"tags":["페이백","이중요금"]}},{"name":"프리미엄기가안심1G+프리미엄(UHD4)+AP+클락","internet":37400,"tv":16500,"stb":4400,"monthly":58300,"bundle":45100,"gift":{"raw":"현금30+이모5=총35만원+페이백+이중요금","parts":[["현금",30],["이모",5]],"total":35,"tags":["페이백","이중요금"]}},{"name":"(소호)와파500+실속형(UHD4)+AP","internet":27500,"tv":13200,"stb":4400,"monthly":45100,"bundle":35200,"gift":{"raw":"현금+상품권 (가이드없이 일괄지급)","parts":[],"total":null,"tags":["현금","상품권","가이드없이 일괄지급"]}}],"policy":{"notes":["가입경로-홈플러스","설치후 결합신청","네이버이메일필수(기사내방시확인)"],"extra":["9개월후티비하향(실속형) -3,300=49,500원","9개월후결합+티비하향=39,600원","프리미엄VOD(18,700원)/실속형(13,200원)","프리미엄기가슬림500+프리미엄VOD(UHD4)+AP+클락 => 결합전 55,000원/ 결합후 45,100원 / 3개월후 실속형 결합전 49,500원 / 결합후 39,600원"],"installLabel":"설치비 (추가티비 +22,000)","extraTvLabel":"추가티비 (실속형)","install":{"single":36300,"it":56100,"itt":78100,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":7700,"stb":4400,"monthly":12100,"stbLabel":"UHD4"}}},{"name":"SK(106)","products":[{"name":"광랜 100M+AP","internet":23100,"tv":null,"stb":null,"monthly":23100,"bundle":18700,"gift":{"raw":"현금9만원 (이중요금포함)","parts":[["현금",9]],"total":9,"tags":["이중요금포함"]}},{"name":"기가라이트 500M+AP","internet":34100,"tv":null,"stb":null,"monthly":34100,"bundle":23100,"gift":{"raw":"현금17만원 (이중요금포함)","parts":[["현금",17]],"total":17,"tags":["이중요금포함"]}},{"name":"기가 1G+AP","internet":39600,"tv":null,"stb":null,"monthly":39600,"bundle":26400,"gift":{"raw":"현금17만원 (이중요금포함)","parts":[["현금",17]],"total":17,"tags":["이중요금포함"]}},{"name":"광랜100M+ALL(스마트3)+AP","internet":22000,"tv":16500,"stb":4400,"monthly":42900,"bundle":38500,"gift":{"raw":"현금16+이모13=총29만원+페이백 (이중요금포함)","parts":[["현금",16],["이모",13]],"total":29,"tags":["페이백","이중요금포함"]}},{"name":"기가라이트500M+ALL(스마트3)+AP","internet":28600,"tv":16500,"stb":4400,"monthly":49500,"bundle":42900,"gift":{"raw":"현금24+이모13=총37만원+페이백+이중요금","parts":[["현금",24],["이모",13]],"total":37,"tags":["페이백","이중요금"]}},{"name":"기가1G+ALL(스마트3)+AP","internet":34100,"tv":16500,"stb":4400,"monthly":55000,"bundle":46200,"gift":{"raw":"현금24+이모13=총37만원+페이백+이중요금","parts":[["현금",24],["이모",13]],"total":37,"tags":["페이백","이중요금"]}}],"policy":{"notes":["가입경로-전단지","접수시 결합가능(본인폰1대기준)"],"extra":["1년후티비하향(이코노미) -6,600=42,900원","1년후결합+티비하향=36,300원"],"installLabel":"설치비 (추가티비 +17,600)","extraTvLabel":"추가티비 (스탠다드)","install":{"single":36300,"it":56100,"itt":73700,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":7700,"stb":2200,"monthly":9900,"stbLabel":"스마트3"}}},{"name":"KT(100)","products":[{"name":"슬림100M+AP","internet":23100,"tv":null,"stb":null,"monthly":23100,"bundle":17600,"gift":{"raw":"현금5+이모4=총9만원 (이중요금포함)","parts":[["현금",5],["이모",4]],"total":9,"tags":["이중요금포함"]}},{"name":"베이직500M+AP","internet":34100,"tv":null,"stb":null,"monthly":34100,"bundle":28600,"gift":{"raw":"현금10+이모4=총14만원 (이중요금포함)","parts":[["현금",10],["이모",4]],"total":14,"tags":["이중요금포함"]}},{"name":"에센스1G+AP","internet":38500,"tv":null,"stb":null,"monthly":38500,"bundle":33000,"gift":{"raw":"현금10+이모4=총14만원 (이중요금포함)","parts":[["현금",10],["이모",4]],"total":14,"tags":["이중요금포함"]}},{"name":"슬림100M+모든G(지니3)+AP","internet":23100,"tv":19800,"stb":4400,"monthly":47300,"bundle":41800,"gift":{"raw":"현금28+이모7=총35만원 (이중요금포함)","parts":[["현금",28],["이모",7]],"total":35,"tags":["이중요금포함"]}},{"name":"베이직500M+모든G(지니3)+AP","internet":28600,"tv":19800,"stb":4400,"monthly":52800,"bundle":47300,"gift":{"raw":"현금28+이모7=총35만원+페이백+이중요금","parts":[["현금",28],["이모",7]],"total":35,"tags":["페이백","이중요금"]}},{"name":"에센스1G+모든G(지니3)+AP","internet":33000,"tv":19800,"stb":4400,"monthly":57200,"bundle":51700,"gift":{"raw":"현금25+이모10=총35만원+페이백+이중요금","parts":[["현금",25],["이모",10]],"total":35,"tags":["페이백","이중요금"]}}],"policy":{"notes":["가입경로-전단지","설치후결합신청/패밀리결합 -10만원","이메일필수 (KT폰제외)"],"extra":["1년후 티비하향(베이직) -5,500=45,100원","1년후결합+티비하향=39,600원"],"installLabel":"설치비 (추가티비 +15,400)","extraTvLabel":"추가티비 (OTV11베이직)","install":{"single":36000,"it":56200,"itt":71600,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":7370,"stb":4400,"monthly":11770,"stbLabel":"지니3"}}},{"name":"KT스카이라이프(1588-3002)","products":[{"name":"스카이안심100M+AP","internet":25300,"tv":null,"stb":null,"monthly":25300,"bundle":null,"gift":{"raw":"현금4+스카이샵4=총8만원 (이중요금포함)","parts":[["현금",4],["스카이샵",4]],"total":8,"tags":["이중요금포함"]}},{"name":"스카이안심200M+AP","internet":26400,"tv":null,"stb":null,"monthly":26400,"bundle":null,"gift":{"raw":"현금6+스카이샵4=총10만원 (이중요금포함)","parts":[["현금",6],["스카이샵",4]],"total":10,"tags":["이중요금포함"]}},{"name":"스카이안심500M+AP","internet":31900,"tv":null,"stb":null,"monthly":31900,"bundle":null,"gift":{"raw":"현금6+스카이샵5=총11만원 (이중요금포함)","parts":[["현금",6],["스카이샵",5]],"total":11,"tags":["이중요금포함"]}},{"name":"스카이안심200M+IPTV플러스(지니A)+AP","internet":23100,"tv":11000,"stb":3300,"monthly":37400,"bundle":null,"gift":{"raw":"현금23+스카이샵4=총27만원+페이백+이중요금","parts":[["현금",23],["스카이샵",4]],"total":27,"tags":["페이백","이중요금"]}},{"name":"스카이안심500M+IPTV플러스(지니A)+AP","internet":28600,"tv":11000,"stb":3300,"monthly":42900,"bundle":null,"gift":{"raw":"현금27+스카이샵5=총32만원+페이백+이중요금","parts":[["현금",27],["스카이샵",5]],"total":32,"tags":["페이백","이중요금"]}}],"policy":{"notes":["신분증 발급일자 확인","운전면허번호+식별번호"],"extra":["KT전환건 사은품 -10만원","다셋탑 프로모션 임대료 50%"],"installLabel":"설치비 (추가티비 +11,000)","extraTvLabel":"추가티비 (IPTV베이직)","install":{"single":36300,"it":48500,"itt":59500,"labels":["인단독","인+티","인+티+티"]},"extraTv":{"base":6050,"stb":1650,"monthly":7700,"stbLabel":"지니A"}}}]},{"key":"원콜유심동판","name":"유심","type":"sim","basis":"09.10기준","carriers":[{"name":"KT","note":"추가회선 5만원 (총액결합/프리미엄싱글 진행/요금유지기간 273일)","giftCols":["사은품"],"plans":[{"name":"베이직600MB","data":"600MB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":28900,"discount":21675,"gifts":["진행불가"]},{"name":"베이직1.4GB","data":"1.4GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":33000,"discount":24750,"gifts":["진행불가"]},{"name":"베이직 4GB","data":"4GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":37000,"discount":27750,"gifts":["10만원"]},{"name":"베이직 7GB","data":"7GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":45000,"discount":33750,"gifts":["10만원"]},{"name":"베이직 10GB","data":"10GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":50000,"discount":37500,"gifts":["10만원"]},{"name":"베이직14GB","data":"14GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":55000,"discount":41250,"gifts":["14만원"]},{"name":"베이직 21GB","data":"21GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":58000,"discount":43500,"gifts":["14만원"]},{"name":"베이직 30GB","data":"30GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":61000,"discount":45750,"gifts":["14만원"]},{"name":"베이직 70GB","data":"70GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":65000,"discount":48750,"gifts":["14만원"]},{"name":"베이직 90GB","data":"90GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":67000,"discount":50250,"gifts":["14만원"]},{"name":"베이직 110GB","data":"110GB+최대 5Mbps","voice":"무제한","sms":"기본제공","price":69000,"discount":51750,"gifts":["20만원"]},{"name":"베이직80","data":"무제한","voice":"무제한","sms":"기본제공","price":80000,"discount":60000,"gifts":["20만원"]},{"name":"초이스 90","data":"무제한","voice":"무제한","sms":"기본제공","price":90000,"discount":67500,"gifts":["25만원"]}]},{"name":"LG","note":"추가회선 동일 (참쉬운결합진행/요금유지기간 181일)","giftCols":["사은품"],"plans":[{"name":"데이터플랜 5GB","data":"5GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":37000,"discount":27750,"gifts":["진행불가"]},{"name":"데이터플랜 9GB","data":"9GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":47000,"discount":35250,"gifts":["진행불가"]},{"name":"데이터플랜 14GB","data":"14GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":55000,"discount":41250,"gifts":["진행불가"]},{"name":"데이터플랜 24GB","data":"24GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":59000,"discount":44250,"gifts":["진행불가"]},{"name":"데이터플랜 31GB","data":"31GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":61000,"discount":45750,"gifts":["10만원"]},{"name":"데이터플랜 50GB","data":"50GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":63000,"discount":47250,"gifts":["10만원"]},{"name":"데이터플랜 80GB","data":"80GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":66000,"discount":49500,"gifts":["10만원"]},{"name":"데이터플랜 95GB","data":"95GB+최대 3Mbps","voice":"무제한","sms":"기본제공","price":68000,"discount":51000,"gifts":["10만원"]},{"name":"데이터플랜 125GB","data":"125GB+최대 5Mbps","voice":"무제한","sms":"기본제공","price":70000,"discount":52500,"gifts":["15만원"]},{"name":"데이터플랜 150GB","data":"150GB+최대 5Mbps","voice":"무제한","sms":"기본제공","price":75000,"discount":56250,"gifts":["20만원"]},{"name":"데이터플랜 MAX","data":"무제한","voice":"무제한","sms":"기본제공","price":85000,"discount":63750,"gifts":["25만원"]}]},{"name":"SK","note":"추가회선 동일 (요가결진행/요금유지기간 181일)","giftCols":["사은품"],"plans":[{"name":"라이트 39","data":"6GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":39000,"discount":29250,"gifts":["진행불가"]},{"name":"라이트 45","data":"8GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":45000,"discount":33750,"gifts":["15만원"]},{"name":"라이트49","data":"11GB+최대 400Kbps","voice":"무제한","sms":"기본제공","price":49000,"discount":36750,"gifts":["15만원"]},{"name":"라이트55","data":"15GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":55000,"discount":41250,"gifts":["15만원"]},{"name":"라이트 59","data":"24GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":59000,"discount":44250,"gifts":["15만원"]},{"name":"라이트59 13GB업","data":"37GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":62000,"discount":46500,"gifts":["15만원"]},{"name":"라이트59 30GB업","data":"54GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":64000,"discount":48000,"gifts":["15만원"]},{"name":"라이트59 50GB업","data":"74GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":66000,"discount":49500,"gifts":["15만원"]},{"name":"라이트59 75GB업","data":"99GB+최대 1Mbps","voice":"무제한","sms":"기본제공","price":68000,"discount":51000,"gifts":["15만원"]},{"name":"라이트69","data":"110GB+최대 5Mbps","voice":"무제한","sms":"기본제공","price":69000,"discount":51750,"gifts":["20만원"]},{"name":"라이트 79","data":"250GB+최대 5Mbps","voice":"무제한","sms":"기본제공","price":79000,"discount":59250,"gifts":["20만원"]},{"name":"베스트 89","data":"무제한","voice":"무제한","sms":"기본제공","price":89000,"discount":66750,"gifts":["25만원"]}]}]}]};
+</script>
+<script>
+(function () {
+  var el = function (id) { return document.getElementById(id); };
+  var launcher = el("launcher"), fareBtn = el("fareBtn"), panel = el("panel");
+  var channelSeg = el("channelSeg"), tabs = el("tabs"), search = el("search");
+  var carriersEl = el("carriers");
+
+  function speedOf(name) {
+    var m = /(\d+(?:\.\d+)?)\s*(M|G)(?![a-z])/i.exec(name);
+    if (!m) {
+      var bare = /(?:^|[^\d])(100|160|200|500)(?![\d])/.exec(name);
+      if (bare) return { label: bare[1] + "M", mbps: Number(bare[1]) };
+      if (/1기가|(?:^|[^\d])1G/i.test(name)) return { label: "1G", mbps: 1000 };
+      return { label: "기타", mbps: Infinity };
+    }
+    var n = parseFloat(m[1]);
+    var unit = m[2].toUpperCase();
+    return { label: m[1] + unit, mbps: unit === "G" ? n * 1000 : n };
+  }
+
+  function won(n) { return n == null ? "-" : n.toLocaleString("ko-KR"); }
+  function man(n) { return n == null ? "-" : n.toLocaleString("ko-KR") + "만"; }
+  function h(tag, attrs, children) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === "class") node.className = attrs[k];
+      else if (k === "text") node.textContent = attrs[k];
+      else if (k === "html") node.innerHTML = attrs[k];
+      else node.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { if (c) node.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return node;
+  }
+  function shortName(name) { return name.replace(/\s*\([\d\-]+\)\s*$/, ""); }
+  function channel() { return RATES.channels[state.channel]; }
+
+  function shortName(name) { return name.replace(/\s*\([\d\-]+\)\s*$/, ""); }
+
+  var stepsEl = el("steps"), resultEl = el("result");
+  var NET = RATES.channels.filter(function (c) { return c.type !== "sim"; });
+  var SIM = RATES.channels.filter(function (c) { return c.type === "sim"; })[0] || null;
+  var C = { ch: 0, carrier: null, speed: null, product: null, extraTv: 0, bundle: false, simCarrier: 0, simPlan: 0, sims: [], ded: {} };
+
+  function netCh() { return NET[C.ch]; }
+  function carrierObj() { return C.carrier == null ? null : netCh().carriers[C.carrier]; }
+  function manWon(n) { return n == null ? "-" : n.toLocaleString("ko-KR") + "만"; }
+  function parseMan(text) { var m = /(\d+)\s*만/.exec(text || ""); return m ? Number(m[1]) : null; }
+  function deductions(c) {
+    if (!c) return [];
+    var out = [];
+    (c.policy.notes || []).concat(c.policy.extra || []).forEach(function (t) {
+      var m = /-\s*(\d+)\s*만\s*원?/.exec(t);
+      if (m) out.push({ text: t, man: Number(m[1]) });
+    });
+    return out;
+  }
+  function simGiftFor(carrier, plan, lineIndex) {
+    // 사은품 열이 여러 개(100M/500M)면 고른 인터넷 속도로 열을 정한다
+    var col = 0;
+    if (carrier.giftCols.length > 1) {
+      var mbps = C.speed ? speedOf(C.speed).mbps : 0;
+      col = mbps >= 500 ? carrier.giftCols.length - 1 : 0;
+    }
+    var raw = plan.gifts[col] || "";
+    var man = parseMan(raw);
+    var rule = null;
+    if (lineIndex > 0) {
+      var r = /추가회선\s*(\d+)\s*만\s*원?/.exec(carrier.note || "");
+      if (r) { man = man == null ? null : Number(r[1]); rule = "추가회선 " + r[1] + "만원"; }
+      else if (/추가회선\s*동일/.test(carrier.note || "")) rule = "추가회선 동일";
+    }
+    return { raw: raw, man: man, col: carrier.giftCols[col], rule: rule };
+  }
+
+  function chip(label, pressed, onClick, disabled) {
+    var b = h("button", { type: "button", class: "chip", "aria-pressed": String(!!pressed), text: label });
+    if (disabled) b.disabled = true;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+  function step(n, title, sub, children) {
+    var head = h("h3", null, [h("span", { class: "n", text: String(n) }), title, sub ? h("small", { text: sub }) : null]);
+    return h("div", { class: "step" }, [head].concat(children));
+  }
+
+  function renderSteps() {
+    stepsEl.innerHTML = "";
+    var n = 1;
+    if (NET.length > 1) {
+      stepsEl.appendChild(step(n++, "단가표", null, [h("div", { class: "chips" }, NET.map(function (ch, i) {
+        return chip(ch.name, C.ch === i, function () { C.ch = i; C.carrier = null; C.speed = null; C.product = null; C.ded = {}; C.sims = []; renderCalc(); });
+      }))]));
+    }
+    stepsEl.appendChild(step(n++, "통신사", null, [h("div", { class: "chips" }, netCh().carriers.map(function (c, i) {
+      return chip(shortName(c.name), C.carrier === i, function () { C.carrier = i; C.speed = null; C.product = null; C.extraTv = 0; C.bundle = false; C.ded = {}; renderCalc(); });
+    }))]));
+    var car = carrierObj();
+    if (car) {
+      var seen = {};
+      car.products.forEach(function (p) { var sp = speedOf(p.name); seen[sp.label] = sp.mbps; });
+      var labels = Object.keys(seen).sort(function (a, b) { return seen[a] - seen[b]; });
+      stepsEl.appendChild(step(n++, "인터넷 속도", null, [h("div", { class: "chips" }, labels.map(function (l) {
+        return chip(l, C.speed === l, function () { C.speed = l; C.product = null; renderCalc(); });
+      }))]));
+    }
+    if (car && C.speed) {
+      var list = car.products.filter(function (p) { return speedOf(p.name).label === C.speed; });
+      stepsEl.appendChild(step(n++, "상품", "월요금 · 사은품", [h("div", { class: "plist" }, list.map(function (p) {
+        var b = h("button", { type: "button", class: "popt", "aria-pressed": String(C.product === p) }, [
+          h("span", { class: "nm", text: p.name }),
+          h("span", { class: "amt", text: won(p.monthly) + "원" }),
+          h("span", { class: "gift", text: p.gift.total != null ? manWon(p.gift.total) : "-" }),
+          h("span", { class: "sub", text: (p.tv == null ? "인터넷 단독" : "TV 포함") + (p.bundle != null ? " · 결합 시 " + won(p.bundle) + "원" : " · 결합 없음") })
+        ]);
+        b.addEventListener("click", function () { C.product = p; if (p.bundle == null) C.bundle = false; if (p.tv == null) C.extraTv = 0; renderCalc(); });
+        return b;
+      }))]));
+    }
+    var prod = C.product;
+    if (car && prod) {
+      var et = car.policy.extraTv;
+      if (prod.tv != null && et && et.monthly != null) {
+        stepsEl.appendChild(step(n++, "추가 TV", "대당 월 " + won(et.monthly) + "원" + (car.policy.extraTvLabel ? " · " + car.policy.extraTvLabel.replace("추가티비", "").trim() : ""),
+          [h("div", { class: "chips" }, [0, 1, 2].map(function (k) { return chip(k === 0 ? "없음" : k + "대", C.extraTv === k, function () { C.extraTv = k; renderCalc(); }); }))]));
+      }
+      stepsEl.appendChild(step(n++, "결합", prod.bundle == null ? "이 상품은 결합금액이 없습니다" : "결합 시 월 " + won(prod.bundle) + "원",
+        [h("div", { class: "chips" }, [
+          chip("결합 안 함", !C.bundle, function () { C.bundle = false; renderCalc(); }),
+          chip("결합함", C.bundle, function () { C.bundle = true; renderCalc(); }, prod.bundle == null)
+        ])]));
+      var deds = deductions(car);
+      if (deds.length) {
+        stepsEl.appendChild(step(n++, "차감 항목", "해당되면 체크", [h("div", { class: "checks" }, deds.map(function (d, i) {
+          var cb = h("input", { type: "checkbox" }); cb.checked = !!C.ded[i];
+          cb.addEventListener("change", function () { C.ded[i] = cb.checked; renderResult(); });
+          return h("label", null, [cb, h("span", { text: d.text })]);
+        }))]));
+      }
+    }
+    if (SIM) {
+      var sc = SIM.carriers[C.simCarrier] || SIM.carriers[0];
+      if (C.simPlan >= sc.plans.length) C.simPlan = 0;
+      var sel = h("select", { "aria-label": "요금제 선택" });
+      sc.plans.forEach(function (pl, i) {
+        var o = h("option", { value: String(i), text: pl.name + " · " + pl.data + " · 할인 " + won(pl.discount) + "원 · 사은품 " + (pl.gifts.join("/") || "-") });
+        if (i === C.simPlan) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", function () { C.simPlan = Number(sel.value); });
+      var add = h("button", { type: "button", class: "tool", text: "+ 회선 추가" });
+      add.addEventListener("click", function () { C.sims.push({ carrier: C.simCarrier, plan: C.simPlan }); renderCalc(); });
+      var lines = h("div", { class: "lines" }, C.sims.map(function (ln, i) {
+        var cc = SIM.carriers[ln.carrier], pl = cc.plans[ln.plan];
+        var sameBefore = C.sims.slice(0, i).filter(function (x) { return x.carrier === ln.carrier; }).length;
+        var g = simGiftFor(cc, pl, sameBefore);
+        var x = h("button", { type: "button", class: "del", text: "\u00d7", "aria-label": "회선 삭제" });
+        x.addEventListener("click", function () { C.sims.splice(i, 1); renderCalc(); });
+        return h("div", { class: "line" }, [
+          h("span", { text: cc.name + " " + pl.name + (g.rule ? " (" + g.rule + ")" : "") }),
+          h("span", { class: "amt", text: "월 " + won(pl.discount) + "원" }),
+          h("span", { class: "gift" + (g.man == null ? " no" : ""), text: g.man == null ? (g.raw || "-") : manWon(g.man) }),
+          x
+        ]);
+      }));
+      stepsEl.appendChild(step(n++, "유심", SIM.basis || null, [
+        h("div", { class: "chips" }, SIM.carriers.map(function (c, i) { return chip(c.name, (C.simCarrier || 0) === i, function () { C.simCarrier = i; C.simPlan = 0; renderCalc(); }); })),
+        h("div", { class: "simrow" }, [sel, add]),
+        h("div", { class: "rnote", text: sc.note || "" }),
+        lines
+      ]));
+    }
+  }
+
+  function compute() {
+    var car = carrierObj(), prod = C.product;
+    var r = { lines: [], monthly: 0, install: null, giftNet: null, giftNetCash: null, giftParts: [], giftSim: 0, ded: 0, notes: [] };
+    if (car && prod) {
+      var base = C.bundle && prod.bundle != null ? prod.bundle : prod.monthly;
+      r.lines.push([C.bundle && prod.bundle != null ? "인터넷+TV (결합)" : "인터넷+TV", base]);
+      r.monthly += base;
+      var et = car.policy.extraTv;
+      if (C.extraTv > 0 && et && et.monthly != null) { r.lines.push(["추가 TV " + C.extraTv + "대", et.monthly * C.extraTv]); r.monthly += et.monthly * C.extraTv; }
+      var ins = car.policy.install;
+      if (ins) {
+        if (prod.tv == null) r.install = ins.single;
+        else if (C.extraTv === 0) r.install = ins.it;
+        else {
+          r.install = ins.itt;
+          var per = /\+\s*([\d,]+)/.exec(car.policy.installLabel || "");
+          if (C.extraTv > 1 && per) r.install += Number(per[1].replace(/,/g, "")) * (C.extraTv - 1);
+        }
+      }
+      r.giftNet = prod.gift.total;
+      var cash = prod.gift.parts.filter(function (p) { return p[0] === "현금"; }).reduce(function (a, p) { return a + p[1]; }, 0);
+      r.giftNetCash = prod.gift.parts.length ? cash : null;
+      r.giftParts = prod.gift.parts;
+      deductions(car).forEach(function (d, i) { if (C.ded[i]) r.ded += d.man; });
+      (car.policy.extra || []).forEach(function (t) { if (!/-\s*\d+\s*만/.test(t)) r.notes.push(t); });
+    }
+    C.sims.forEach(function (ln, i) {
+      var cc = SIM.carriers[ln.carrier], pl = cc.plans[ln.plan];
+      var sameBefore = C.sims.slice(0, i).filter(function (x) { return x.carrier === ln.carrier; }).length;
+      var g = simGiftFor(cc, pl, sameBefore);
+      r.lines.push(["유심 " + cc.name + " " + pl.name, pl.discount]);
+      r.monthly += pl.discount || 0;
+      if (g.man != null) r.giftSim += g.man;
+    });
+    return r;
+  }
+
+  function summaryText() {
+    var car = carrierObj(), prod = C.product, r = compute();
+    var out = [];
+    if (car && prod) out.push("[" + netCh().name + "] " + shortName(car.name) + " " + C.speed + " · " + prod.name);
+    r.lines.forEach(function (l) { out.push(l[0] + " " + won(l[1]) + "원"); });
+    if (r.lines.length > 1) out.push("월 합계 " + won(r.monthly) + "원");
+    if (r.install != null) out.push("설치비 " + won(r.install) + "원");
+    if (r.giftNet != null || r.giftSim) {
+      var tot = (r.giftNet || 0) + r.giftSim - r.ded;
+      var s2 = "사은품 총 " + manWon(tot);
+      if (r.giftNetCash != null) s2 += " (현금 기준 " + manWon(r.giftNetCash + r.giftSim - r.ded) + ")";
+      out.push(s2);
+    }
+    return out.join("\n");
+  }
+
+  function renderResult() {
+    resultEl.innerHTML = "";
+    var car = carrierObj(), prod = C.product, r = compute();
+    resultEl.appendChild(h("h3", { text: "계산 결과" }));
+    if (!prod && !C.sims.length) {
+      resultEl.appendChild(h("div", { class: "empty", text: "통신사와 상품을 고르면 여기에 월요금 · 설치비 · 사은품이 나옵니다." }));
+      return;
+    }
+    if (car && prod) resultEl.appendChild(h("div", { class: "pick" }, [h("b", { text: shortName(car.name) + " " + C.speed }), h("br"), prod.name]));
+    var m = h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "월요금" })]);
+    r.lines.forEach(function (l) { m.appendChild(h("div", { class: "rrow" }, [h("span", { text: l[0] }), h("span", { text: won(l[1]) + "원" })])); });
+    m.appendChild(h("div", { class: "rrow sum big" }, [h("span", { text: "월 합계" }), h("span", { text: won(r.monthly) + "원" })]));
+    resultEl.appendChild(m);
+    if (r.install != null) {
+      resultEl.appendChild(h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "설치비" }), h("div", { class: "rrow" }, [h("span", { text: prod.tv == null ? "인터넷 단독" : (C.extraTv ? "인+티+티" : "인+티") }), h("span", { text: won(r.install) + "원" })])]));
+    }
+    if (r.giftNet != null || C.sims.length) {
+      var g = h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "사은품 (만원)" })]);
+      if (r.giftNet != null) {
+        g.appendChild(h("div", { class: "rrow" }, [h("span", { text: "인터넷·TV" }), h("span", { text: manWon(r.giftNet) })]));
+        if (r.giftParts.length) g.appendChild(h("div", { class: "rnote", text: r.giftParts.map(function (p) { return p[0] + " " + p[1]; }).join(" + ") }));
+      }
+      if (C.sims.length) g.appendChild(h("div", { class: "rrow" }, [h("span", { text: "유심 " + C.sims.length + "회선" }), h("span", { text: manWon(r.giftSim) })]));
+      if (r.ded) g.appendChild(h("div", { class: "rrow minus" }, [h("span", { text: "차감" }), h("span", { text: "-" + manWon(r.ded) })]));
+      var tot = (r.giftNet || 0) + r.giftSim - r.ded;
+      g.appendChild(h("div", { class: "rrow sum big" }, [h("span", { text: "총액" }), h("span", { text: manWon(tot) })]));
+      if (r.giftNetCash != null) g.appendChild(h("div", { class: "rrow" }, [h("span", { text: "현금 기준" }), h("span", { text: manWon(r.giftNetCash + r.giftSim - r.ded) })]));
+      resultEl.appendChild(g);
+    }
+    if (r.notes.length) resultEl.appendChild(h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "참고" })].concat(r.notes.map(function (t) { return h("div", { class: "rnote", text: t }); }))));
+    var copy = h("button", { type: "button", class: "copy-btn", text: "결과 복사" });
+    copy.addEventListener("click", function () {
+      var t = summaryText();
+      var done = function () { copy.textContent = "복사됨"; setTimeout(function () { copy.textContent = "결과 복사"; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { window.prompt("아래 내용을 복사하세요", t); });
+      else window.prompt("아래 내용을 복사하세요", t);
+    });
+    resultEl.appendChild(copy);
+    var reset = h("button", { type: "button", class: "reset-btn", text: "처음부터" });
+    reset.addEventListener("click", function () { C.carrier = null; C.speed = null; C.product = null; C.extraTv = 0; C.bundle = false; C.sims = []; C.ded = {}; renderCalc(); });
+    resultEl.appendChild(reset);
+  }
+
+  function renderCalc() { renderSteps(); renderResult(); }
+  renderCalc();
+})();
+</script>
+</body>
+</html>

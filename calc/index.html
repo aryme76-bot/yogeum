@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>인터넷·TV 단가표</title>
+<title>요금 계산기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
@@ -88,291 +88,126 @@
     gap: 22px;
   }
 
-  /* ---------- 요금 버튼 ---------- */
-  .launcher {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-    padding-top: 48px;
-  }
-  .launcher.compact { padding-top: 0; flex-direction: row; justify-content: space-between; gap: 16px; }
-  .fare-btn {
-    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
-    font-weight: 900;
-    font-size: 46px;
-    letter-spacing: 0.06em;
-    line-height: 1;
-    padding: 26px 66px;
-    border: 0;
-    border-radius: 16px;
-    background: var(--accent);
-    color: var(--accent-ink);
-    box-shadow: 0 8px 24px rgba(13, 107, 102, 0.28);
-    transition: transform 120ms ease, box-shadow 120ms ease;
-  }
-  .fare-btn:hover { transform: translateY(-2px); }
-  .fare-btn:active { transform: translateY(0); }
-  .compact .fare-btn { font-size: 22px; padding: 10px 24px; border-radius: 10px; box-shadow: none; }
-  .hint { color: var(--ink-2); font-size: 14px; margin: 0; }
-  .compact .hint { display: none; }
-  .built { color: var(--ink-3); font-size: 13px; margin: 0; }
-  .launcher:not(.compact) .built { display: none; }
-
-  /* ---------- 패널 ---------- */
-  .panel { display: flex; flex-direction: column; gap: 18px; }
-  .panel[hidden] { display: none; }
-
-  .controls {
+  /* ---------- 상단 ---------- */
+  .head {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 16px 18px;
     display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .controls-top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .controls h1 {
-    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
-    font-weight: 800;
-    font-size: 22px;
-    letter-spacing: 0.01em;
-  }
-  .seg {
-    display: inline-flex;
-    border: 1px solid var(--line-strong);
-    border-radius: 10px;
-    padding: 3px;
-    gap: 3px;
-    background: var(--head);
-  }
-  .seg button {
-    border: 0;
-    background: transparent;
-    padding: 7px 14px;
-    border-radius: 7px;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--ink-2);
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-  .seg button small { font-weight: 500; font-size: 12px; color: var(--ink-3); }
-  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-  .seg button[aria-pressed="true"] small { color: var(--accent); }
-
-  .controls-bottom { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  .tabs { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; }
-  .tab {
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    padding: 7px 13px;
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink-2);
-  }
-  .tab:hover { background: var(--row-alt); }
-  .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .search { flex: 0 1 260px; min-width: 180px; }
-  .search input {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    color: var(--ink);
-    font: inherit;
-  }
-  .tool {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .tool:hover { background: var(--row-alt); }
-
-
-  /* ---------- 통신사 섹션 ---------- */
-  .carrier {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .carrier[hidden] { display: none; }
-  .carrier-head {
-    display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px 16px;
-    padding: 16px 18px 12px;
   }
-  .carrier-head h2 {
-    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
-    font-weight: 900;
-    font-size: 24px;
-    letter-spacing: 0.01em;
+  .head h1 { font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.01em; }
+  .head .built { color: var(--ink-3); font-size: 13px; margin: 0; }
+  .head a { color: var(--accent); font-size: 13px; }
+
+  /* ---------- 계산 ---------- */
+  #calc { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-  .carrier-head .meta { color: var(--ink-2); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
-  .table-wrap { overflow-x: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  table.rates { width: 100%; border-collapse: collapse; min-width: 860px; font-variant-numeric: tabular-nums; }
-  table.rates th, table.rates td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  table.rates th {
-    background: var(--head);
-    text-align: right;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    color: var(--ink-2);
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
+  .step h3 { font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .step h3 .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700;
   }
-  table.rates th.l { text-align: left; }
-  table.rates td { text-align: right; white-space: nowrap; }
-  table.rates td.l { text-align: left; white-space: normal; font-weight: 500; min-width: 240px; }
-  table.rates tbody tr:nth-child(odd):not(.group) { background: var(--row-alt); }
-  table.rates tbody:last-child tr:last-child td { border-bottom: 0; }
-  table.rates tr.group td {
-    text-align: left;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-family: "Gothic A1", "IBM Plex Sans KR", sans-serif;
-    font-weight: 900;
-    font-size: 15px;
-    letter-spacing: 0.04em;
-    padding: 8px 12px;
-    border-top: 2px solid var(--line-strong);
-  }
-  table.rates tr.group td small { font-family: inherit; font-weight: 600; font-size: 12px; color: var(--ink-2); margin-left: 8px; letter-spacing: 0; }
-  .speeds { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .speeds .lbl { font-size: 13px; color: var(--ink-2); margin-right: 4px; }
+  .step h3 small { font-weight: 500; color: var(--ink-3); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     border: 1px solid var(--line-strong);
     background: var(--surface);
-    padding: 5px 11px;
+    padding: 8px 14px;
     border-radius: 999px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--ink-2);
     font-variant-numeric: tabular-nums;
   }
   .chip:hover { background: var(--row-alt); }
-  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-  table.rates tr.solo td.l::after {
-    content: "인터넷 단독";
-    display: inline-block;
-    margin-left: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--ink-3);
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    padding: 0 7px;
-    vertical-align: middle;
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .chip:disabled { opacity: 0.45; cursor: not-allowed; }
+  .tool { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); font-size: 14px; font-weight: 500; }
+  .tool:hover { background: var(--row-alt); }
+  .plist { display: flex; flex-direction: column; gap: 6px; }
+  .popt {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 2px 14px; align-items: center;
+    padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface);
+    text-align: left; font-size: 14px;
   }
-  td.dim { color: var(--ink-3); }
-  td.monthly { font-weight: 600; }
-  td.total { font-weight: 700; font-size: 17px; color: var(--accent); }
-  td.total span { font-size: 12px; font-weight: 600; margin-left: 1px; }
-  table.rates td.parts { text-align: left; color: var(--ink-2); font-size: 13px; }
-  td.parts b { color: var(--ink); font-weight: 600; }
-  td.parts i { font-style: normal; color: var(--ink-3); margin: 0 5px; }
-  td.parts .tags { display: block; font-size: 12px; color: var(--ink-3); margin-top: 1px; }
-  .none { padding: 24px 18px; color: var(--ink-2); text-align: center; }
-  table.sim td.l { min-width: 150px; }
-  table.sim td.spec { text-align: left; color: var(--ink-2); font-size: 13.5px; white-space: nowrap; }
-  table.sim td.gift { font-weight: 700; font-size: 16px; color: var(--accent); }
-  table.sim td.gift.no { font-weight: 500; font-size: 13px; color: var(--ink-3); }
-  .note-card p { margin: 0; font-size: 14px; line-height: 1.55; }
-
-  .policy {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 12px;
-    padding: 14px 18px 18px;
+  .popt:hover { background: var(--row-alt); }
+  .popt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .popt .nm { font-weight: 500; }
+  .popt .sub { grid-column: 1 / -1; font-size: 12px; color: var(--ink-2); }
+  .popt .amt { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .popt .gift { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .simrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .simrow select { flex: 1 1 220px; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font: inherit; }
+  .lines { display: flex; flex-direction: column; gap: 6px; }
+  .line {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 10px; align-items: center;
+    padding: 8px 12px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; background: var(--row-alt);
   }
-  .card {
+  .line .amt { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .line .gift { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .line .gift.no { color: var(--ink-3); font-weight: 500; }
+  .del { border: 0; background: transparent; color: var(--caution); font-size: 18px; line-height: 1; padding: 4px 8px; border-radius: 6px; }
+  .del:hover { background: var(--caution-soft); }
+  .checks { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .checks label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+  .checks input { margin-top: 3px; }
+  .rnote { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+  .result {
+    background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 16px;
+    position: sticky;
+    top: 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
   }
-  .card h3 { font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
-  .card h3 small { font-weight: 500; color: var(--ink-3); }
-  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; align-items: baseline; }
-  .kv dt { color: var(--ink-2); margin: 0; }
-  .kv dd { margin: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .kv dd.sum { border-top: 1px solid var(--line); padding-top: 4px; font-weight: 700; }
-  .kv dt.sum { border-top: 1px solid var(--line); padding-top: 4px; }
-  .card.caution { border-color: var(--caution); }
-  .card.caution h3 { color: var(--caution); }
-  .notes { margin: 0; padding-left: 18px; font-size: 14px; display: flex; flex-direction: column; gap: 3px; }
-  .notes li::marker { color: var(--caution); }
-  .notes.plain li::marker { color: var(--ink-3); }
-  .notes li.extra { font-weight: 700; color: var(--caution); }
-
-  .foot { color: var(--ink-3); font-size: 13px; text-align: center; }
-
-  @media (prefers-reduced-motion: reduce) { .fare-btn { transition: none; } }
-  @media (max-width: 560px) {
-    .fare-btn { font-size: 36px; padding: 22px 44px; }
-    .carrier-head h2 { font-size: 20px; }
-  }
-  @media print {
-    body { background: #fff; color: #000; font-size: 11px; }
-    .wrap { padding: 0; max-width: none; gap: 10px; }
-    .launcher, .controls-bottom, .tool, .summary-head .toggle { display: none !important; }
-    .controls, .summary, .carrier { border: 0; border-radius: 0; break-inside: avoid; }
-    .carrier { break-inside: auto; page-break-before: always; }
-    .carrier:first-of-type { page-break-before: auto; }
-    table.rates { min-width: 0; }
-    table.rates th, table.rates td { padding: 4px 6px; }
-    td.total { font-size: 13px; }
-    .policy { padding: 8px 0 0; }
-    tbody tr:nth-child(even) { background: #f3f3f3 !important; }
+  .result h3 { font-size: 14px; font-weight: 700; color: var(--ink-2); }
+  .result .pick { font-size: 14px; line-height: 1.5; }
+  .rsec { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .rsec .lbl { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .rrow { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+  .rrow span:first-child { color: var(--ink-2); }
+  .rrow span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .rrow.sum { border-top: 1px dashed var(--line-strong); padding-top: 6px; margin-top: 2px; }
+  .rrow.sum span:first-child { color: var(--ink); font-weight: 700; }
+  .rrow.big span:last-child { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .rrow.minus span:last-child { color: var(--caution); }
+  .result .empty { color: var(--ink-3); font-size: 14px; padding: 8px 0; }
+  .copy-btn { width: 100%; padding: 10px; border-radius: 9px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .reset-btn { width: 100%; padding: 8px; border-radius: 9px; border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; }
+  @media (max-width: 860px) {
+    #calc { grid-template-columns: 1fr; }
+    .result { position: static; }
   }
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <section class="launcher" id="launcher">
-    <button class="fare-btn" id="fareBtn" type="button" aria-expanded="false" aria-controls="panel">요금</button>
-    <p class="hint">버튼을 누르면 통신사별 단가표가 나옵니다.</p>
-    <p class="built">기준 자료 반영일 2026.09.11</p>
-  </section>
-
-  <section class="panel" id="panel" hidden>
-    <div class="controls">
-      <div class="controls-top">
-        <h1>인터넷·TV 단가표</h1>
-        <div class="seg" id="channelSeg" role="group" aria-label="채널 선택"></div>
-      </div>
-      <div class="controls-bottom">
-        <div class="tabs" id="tabs" role="group" aria-label="통신사 선택"></div>
-        <div class="search"><input id="search" type="search" placeholder="상품명 검색 (예: 프리미엄)" aria-label="상품 검색"></div>
-      </div>
-      <div class="speeds" id="speeds" role="group" aria-label="속도 선택"></div>
-    </div>
-
-
-    <div id="carriers"></div>
-    <p class="foot">단위: 원. 사은품은 만원 단위이며 구성 항목의 합이 총액입니다.</p>
+  <header class="head">
+    <h1>요금 계산기</h1>
+    <p class="built">기준 자료 반영일 2026.09.11 · <a href="../" id="backLink">단가표 보기</a></p>
+  </header>
+  <section id="calc" aria-label="요금 계산">
+    <div class="steps" id="steps"></div>
+    <aside class="result" id="result"></aside>
   </section>
 </div>
 
@@ -385,9 +220,6 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
   var launcher = el("launcher"), fareBtn = el("fareBtn"), panel = el("panel");
   var channelSeg = el("channelSeg"), tabs = el("tabs"), search = el("search");
   var carriersEl = el("carriers");
-
-  var state = { channel: 0, carrier: "all", q: "", speed: "all" };
-  var speedsEl = el("speeds");
 
   function speedOf(name) {
     var m = /(\d+(?:\.\d+)?)\s*(M|G)(?![a-z])/i.exec(name);
@@ -418,239 +250,241 @@ var RATES = {"channels":[{"key":"cpa","name":"CPA","reserve":15,"carriers":[{"na
   function shortName(name) { return name.replace(/\s*\([\d\-]+\)\s*$/, ""); }
   function channel() { return RATES.channels[state.channel]; }
 
-  /* ---- 채널 세그먼트 ---- */
-  if (RATES.channels.length < 2) channelSeg.hidden = true;
-  RATES.channels.forEach(function (ch, i) {
-    var b = h("button", { type: "button", "aria-pressed": String(i === state.channel), text: ch.name });
-    b.addEventListener("click", function () {
-      state.channel = i;
-      Array.prototype.forEach.call(channelSeg.children, function (c, j) { c.setAttribute("aria-pressed", String(j === i)); });
-      render();
-    });
-    channelSeg.appendChild(b);
-  });
+  function shortName(name) { return name.replace(/\s*\([\d\-]+\)\s*$/, ""); }
 
-  /* ---- 통신사 탭 ---- */
-  function buildTabs() {
-    tabs.innerHTML = "";
-    var items = [{ key: "all", label: "전체" }].concat(channel().carriers.map(function (c, i) { return { key: String(i), label: shortName(c.name) }; }));
-    items.forEach(function (it) {
-      var b = h("button", { type: "button", class: "tab", "aria-pressed": String(state.carrier === it.key), text: it.label });
-      b.addEventListener("click", function () {
-        state.carrier = it.key;
-        Array.prototype.forEach.call(tabs.children, function (c) { c.setAttribute("aria-pressed", "false"); });
-        b.setAttribute("aria-pressed", "true");
-        renderCarriers();
-      });
-      tabs.appendChild(b);
+  var stepsEl = el("steps"), resultEl = el("result");
+  var NET = RATES.channels.filter(function (c) { return c.type !== "sim"; });
+  var SIM = RATES.channels.filter(function (c) { return c.type === "sim"; })[0] || null;
+  var C = { ch: 0, carrier: null, speed: null, product: null, extraTv: 0, bundle: false, simCarrier: 0, simPlan: 0, sims: [], ded: {} };
+
+  function netCh() { return NET[C.ch]; }
+  function carrierObj() { return C.carrier == null ? null : netCh().carriers[C.carrier]; }
+  function manWon(n) { return n == null ? "-" : n.toLocaleString("ko-KR") + "만"; }
+  function parseMan(text) { var m = /(\d+)\s*만/.exec(text || ""); return m ? Number(m[1]) : null; }
+  function deductions(c) {
+    if (!c) return [];
+    var out = [];
+    (c.policy.notes || []).concat(c.policy.extra || []).forEach(function (t) {
+      var m = /-\s*(\d+)\s*만\s*원?/.exec(t);
+      if (m) out.push({ text: t, man: Number(m[1]) });
     });
+    return out;
   }
-
-
-  /* ---- 속도 칩 ---- */
-  function buildSpeeds() {
-    speedsEl.innerHTML = "";
-    speedsEl.hidden = channel().type === "sim";
-    if (speedsEl.hidden) return;
-    var seen = {};
-    channel().carriers.forEach(function (c) {
-      c.products.forEach(function (p) { var sp = speedOf(p.name); seen[sp.label] = sp.mbps; });
-    });
-    var labels = Object.keys(seen).sort(function (a, b) { return seen[a] - seen[b]; });
-    if (labels.indexOf(state.speed) === -1) state.speed = "all";
-    speedsEl.appendChild(h("span", { class: "lbl", text: "속도" }));
-    [{ key: "all", label: "전체" }].concat(labels.map(function (l) { return { key: l, label: l }; })).forEach(function (it) {
-      var b = h("button", { type: "button", class: "chip", "aria-pressed": String(state.speed === it.key), text: it.label });
-      b.addEventListener("click", function () {
-        state.speed = it.key;
-        Array.prototype.forEach.call(speedsEl.querySelectorAll(".chip"), function (c) { c.setAttribute("aria-pressed", "false"); });
-        b.setAttribute("aria-pressed", "true");
-        renderCarriers();
-      });
-      speedsEl.appendChild(b);
-    });
-  }
-
-  /* ---- 통신사 섹션 ---- */
-  function giftParts(g) {
-    var parts = g.parts || [];
-    var td = h("td", { class: "parts" });
-    parts.forEach(function (p, i) {
-      if (i) td.appendChild(h("i", { text: "+" }));
-      td.appendChild(document.createTextNode(p[0] + " "));
-      td.appendChild(h("b", { text: String(p[1]) }));
-    });
-    if (!parts.length) td.appendChild(document.createTextNode(g.raw));
-    else if (g.tags && g.tags.length) td.appendChild(h("span", { class: "tags", text: g.tags.join(" · ") }));
-    return td;
-  }
-
-  function simSection(c) {
-    var terms = state.q.split(/[\s,]+/).filter(Boolean);
-    var rows = c.plans.filter(function (p) {
-      var hay = (p.name + " " + p.data).toLowerCase();
-      return terms.every(function (t) { return hay.indexOf(t) !== -1; });
-    });
-    if (terms.length && !rows.length) return null;
-    var sec = h("section", { class: "carrier" });
-    var meta = h("div", { class: "meta" }, [
-      h("span", { text: "요금제 " + c.plans.length + "종" }),
-      channel().basis ? h("span", { text: channel().basis }) : null
-    ]);
-    sec.appendChild(h("div", { class: "carrier-head" }, [h("h2", { text: c.name }), meta]));
-    if (rows.length) {
-      var ths = [h("th", { class: "l", text: "요금제" }), h("th", { class: "l", text: "데이터" }), h("th", { class: "l", text: "음성" }),
-                 h("th", { class: "l", text: "문자" }), h("th", { text: "요금" }), h("th", { text: "할인요금" })];
-      c.giftCols.forEach(function (g) { ths.push(h("th", { text: g })); });
-      var table = h("table", { class: "rates sim" }, [h("thead", null, [h("tr", null, ths)])]);
-      var tbody = h("tbody");
-      rows.forEach(function (p) {
-        var tds = [h("td", { class: "l", text: p.name }), h("td", { class: "spec", text: p.data }), h("td", { class: "spec", text: p.voice }),
-                   h("td", { class: "spec", text: p.sms }), h("td", { class: "num", text: won(p.price) }), h("td", { class: "num monthly", text: won(p.discount) })];
-        p.gifts.forEach(function (g) {
-          var ok = /\d/.test(g);
-          tds.push(h("td", { class: "num gift" + (ok ? "" : " no"), text: g || "-" }));
-        });
-        tbody.appendChild(h("tr", null, tds));
-      });
-      table.appendChild(tbody);
-      sec.appendChild(h("div", { class: "table-wrap" }, [table]));
-    } else {
-      sec.appendChild(h("div", { class: "none", text: "「" + search.value.trim() + "」에 해당하는 요금제가 없습니다." }));
+  function simGiftFor(carrier, plan, lineIndex) {
+    // 사은품 열이 여러 개(100M/500M)면 고른 인터넷 속도로 열을 정한다
+    var col = 0;
+    if (carrier.giftCols.length > 1) {
+      var mbps = C.speed ? speedOf(C.speed).mbps : 0;
+      col = mbps >= 500 ? carrier.giftCols.length - 1 : 0;
     }
-    if (c.note) {
-      sec.appendChild(h("div", { class: "policy" }, [h("div", { class: "card note-card" }, [h("h3", { text: "추가회선 · 조건" }), h("p", { text: c.note })])]));
+    var raw = plan.gifts[col] || "";
+    var man = parseMan(raw);
+    var rule = null;
+    if (lineIndex > 0) {
+      var r = /추가회선\s*(\d+)\s*만\s*원?/.exec(carrier.note || "");
+      if (r) { man = man == null ? null : Number(r[1]); rule = "추가회선 " + r[1] + "만원"; }
+      else if (/추가회선\s*동일/.test(carrier.note || "")) rule = "추가회선 동일";
     }
-    return sec;
+    return { raw: raw, man: man, col: carrier.giftCols[col], rule: rule };
   }
 
-  function carrierSection(c) {
-    if (channel().type === "sim") return simSection(c);
-    var q = state.q;
-    var terms = q.split(/[\s,]+/).filter(Boolean);
-    var rows = c.products.filter(function (p) {
-      var name = p.name.toLowerCase();
-      if (state.speed !== "all" && speedOf(p.name).label !== state.speed) return false;
-      return terms.every(function (t) { return name.indexOf(t) !== -1; });
-    });
-    var filtering = terms.length || state.speed !== "all";
-    if (filtering && !rows.length) return null;
-    var sec = h("section", { class: "carrier" });
-    var meta = h("div", { class: "meta" }, [
-      h("span", { text: "상품 " + c.products.length + "종" }),
-      c.policy.installLabel ? h("span", { text: c.policy.installLabel }) : null,
-      c.policy.extraTvLabel ? h("span", { text: c.policy.extraTvLabel }) : null
-    ]);
-    sec.appendChild(h("div", { class: "carrier-head" }, [h("h2", { text: c.name }), meta]));
+  function chip(label, pressed, onClick, disabled) {
+    var b = h("button", { type: "button", class: "chip", "aria-pressed": String(!!pressed), text: label });
+    if (disabled) b.disabled = true;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+  function step(n, title, sub, children) {
+    var head = h("h3", null, [h("span", { class: "n", text: String(n) }), title, sub ? h("small", { text: sub }) : null]);
+    return h("div", { class: "step" }, [head].concat(children));
+  }
 
-    if (rows.length) {
-      var thead = h("thead", null, [h("tr", null, [
-        h("th", { class: "l", text: "상품" }), h("th", { text: "인터넷" }), h("th", { text: "TV" }), h("th", { text: "셋탑" }),
-        h("th", { text: "월요금" }), h("th", { text: "결합금액" }), h("th", { text: "사은품 총" }), h("th", { class: "l", text: "구성 (만원)" })
-      ])]);
-      var groups = [];
-      rows.forEach(function (p) {
-        var sp = speedOf(p.name);
-        var g = groups.filter(function (x) { return x.label === sp.label; })[0];
-        if (!g) { g = { label: sp.label, mbps: sp.mbps, items: [] }; groups.push(g); }
-        g.items.push(p);
-      });
-      groups.sort(function (a, b) { return a.mbps - b.mbps; });
-      var table = h("table", { class: "rates" }, [thead]);
-      groups.forEach(function (g) {
-      var tbody = h("tbody");
-      tbody.appendChild(h("tr", { class: "group" }, [h("td", { colspan: "8" }, [g.label, h("small", { text: g.items.length + "종" })])]));
-      g.items.forEach(function (p) {
-        var tr = h("tr", { class: p.tv == null ? "solo" : "" }, [
-          h("td", { class: "l", text: p.name }),
-          h("td", { class: "num", text: won(p.internet) }),
-          h("td", { class: "num" + (p.tv == null ? " dim" : ""), text: won(p.tv) }),
-          h("td", { class: "num" + (p.stb == null ? " dim" : ""), text: won(p.stb) }),
-          h("td", { class: "num monthly", text: won(p.monthly) }),
-          h("td", { class: "num" + (p.bundle == null ? " dim" : ""), text: won(p.bundle) }),
-          h("td", { class: "num total" }, [p.gift.total != null ? String(p.gift.total) : "-", h("span", { text: p.gift.total != null ? "만" : "" })]),
-          giftParts(p.gift)
+  function renderSteps() {
+    stepsEl.innerHTML = "";
+    var n = 1;
+    if (NET.length > 1) {
+      stepsEl.appendChild(step(n++, "단가표", null, [h("div", { class: "chips" }, NET.map(function (ch, i) {
+        return chip(ch.name, C.ch === i, function () { C.ch = i; C.carrier = null; C.speed = null; C.product = null; C.ded = {}; C.sims = []; renderCalc(); });
+      }))]));
+    }
+    stepsEl.appendChild(step(n++, "통신사", null, [h("div", { class: "chips" }, netCh().carriers.map(function (c, i) {
+      return chip(shortName(c.name), C.carrier === i, function () { C.carrier = i; C.speed = null; C.product = null; C.extraTv = 0; C.bundle = false; C.ded = {}; renderCalc(); });
+    }))]));
+    var car = carrierObj();
+    if (car) {
+      var seen = {};
+      car.products.forEach(function (p) { var sp = speedOf(p.name); seen[sp.label] = sp.mbps; });
+      var labels = Object.keys(seen).sort(function (a, b) { return seen[a] - seen[b]; });
+      stepsEl.appendChild(step(n++, "인터넷 속도", null, [h("div", { class: "chips" }, labels.map(function (l) {
+        return chip(l, C.speed === l, function () { C.speed = l; C.product = null; renderCalc(); });
+      }))]));
+    }
+    if (car && C.speed) {
+      var list = car.products.filter(function (p) { return speedOf(p.name).label === C.speed; });
+      stepsEl.appendChild(step(n++, "상품", "월요금 · 사은품", [h("div", { class: "plist" }, list.map(function (p) {
+        var b = h("button", { type: "button", class: "popt", "aria-pressed": String(C.product === p) }, [
+          h("span", { class: "nm", text: p.name }),
+          h("span", { class: "amt", text: won(p.monthly) + "원" }),
+          h("span", { class: "gift", text: p.gift.total != null ? manWon(p.gift.total) : "-" }),
+          h("span", { class: "sub", text: (p.tv == null ? "인터넷 단독" : "TV 포함") + (p.bundle != null ? " · 결합 시 " + won(p.bundle) + "원" : " · 결합 없음") })
         ]);
-        tbody.appendChild(tr);
-      });
-      table.appendChild(tbody);
-      });
-      sec.appendChild(h("div", { class: "table-wrap" }, [table]));
-    } else {
-      sec.appendChild(h("div", { class: "none", text: "「" + search.value.trim() + "」에 해당하는 상품이 없습니다." }));
+        b.addEventListener("click", function () { C.product = p; if (p.bundle == null) C.bundle = false; if (p.tv == null) C.extraTv = 0; renderCalc(); });
+        return b;
+      }))]));
     }
-
-    var p = c.policy;
-    var policy = h("div", { class: "policy" });
-    if (p.install) {
-      policy.appendChild(h("div", { class: "card" }, [
-        h("h3", null, ["설치비", h("small", { text: p.installLabel.replace("설치비", "").trim() })]),
-        h("dl", { class: "kv" }, [
-          h("dt", { text: p.install.labels[0] }), h("dd", { text: won(p.install.single) }),
-          h("dt", { text: p.install.labels[1] }), h("dd", { text: won(p.install.it) }),
-          h("dt", { text: p.install.labels[2] }), h("dd", { text: won(p.install.itt) })
-        ])
+    var prod = C.product;
+    if (car && prod) {
+      var et = car.policy.extraTv;
+      if (prod.tv != null && et && et.monthly != null) {
+        stepsEl.appendChild(step(n++, "추가 TV", "대당 월 " + won(et.monthly) + "원" + (car.policy.extraTvLabel ? " · " + car.policy.extraTvLabel.replace("추가티비", "").trim() : ""),
+          [h("div", { class: "chips" }, [0, 1, 2].map(function (k) { return chip(k === 0 ? "없음" : k + "대", C.extraTv === k, function () { C.extraTv = k; renderCalc(); }); }))]));
+      }
+      stepsEl.appendChild(step(n++, "결합", prod.bundle == null ? "이 상품은 결합금액이 없습니다" : "결합 시 월 " + won(prod.bundle) + "원",
+        [h("div", { class: "chips" }, [
+          chip("결합 안 함", !C.bundle, function () { C.bundle = false; renderCalc(); }),
+          chip("결합함", C.bundle, function () { C.bundle = true; renderCalc(); }, prod.bundle == null)
+        ])]));
+      var deds = deductions(car);
+      if (deds.length) {
+        stepsEl.appendChild(step(n++, "차감 항목", "해당되면 체크", [h("div", { class: "checks" }, deds.map(function (d, i) {
+          var cb = h("input", { type: "checkbox" }); cb.checked = !!C.ded[i];
+          cb.addEventListener("change", function () { C.ded[i] = cb.checked; renderResult(); });
+          return h("label", null, [cb, h("span", { text: d.text })]);
+        }))]));
+      }
+    }
+    if (SIM) {
+      var sc = SIM.carriers[C.simCarrier] || SIM.carriers[0];
+      if (C.simPlan >= sc.plans.length) C.simPlan = 0;
+      var sel = h("select", { "aria-label": "요금제 선택" });
+      sc.plans.forEach(function (pl, i) {
+        var o = h("option", { value: String(i), text: pl.name + " · " + pl.data + " · 할인 " + won(pl.discount) + "원 · 사은품 " + (pl.gifts.join("/") || "-") });
+        if (i === C.simPlan) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", function () { C.simPlan = Number(sel.value); });
+      var add = h("button", { type: "button", class: "tool", text: "+ 회선 추가" });
+      add.addEventListener("click", function () { C.sims.push({ carrier: C.simCarrier, plan: C.simPlan }); renderCalc(); });
+      var lines = h("div", { class: "lines" }, C.sims.map(function (ln, i) {
+        var cc = SIM.carriers[ln.carrier], pl = cc.plans[ln.plan];
+        var sameBefore = C.sims.slice(0, i).filter(function (x) { return x.carrier === ln.carrier; }).length;
+        var g = simGiftFor(cc, pl, sameBefore);
+        var x = h("button", { type: "button", class: "del", text: "\u00d7", "aria-label": "회선 삭제" });
+        x.addEventListener("click", function () { C.sims.splice(i, 1); renderCalc(); });
+        return h("div", { class: "line" }, [
+          h("span", { text: cc.name + " " + pl.name + (g.rule ? " (" + g.rule + ")" : "") }),
+          h("span", { class: "amt", text: "월 " + won(pl.discount) + "원" }),
+          h("span", { class: "gift" + (g.man == null ? " no" : ""), text: g.man == null ? (g.raw || "-") : manWon(g.man) }),
+          x
+        ]);
+      }));
+      stepsEl.appendChild(step(n++, "유심", SIM.basis || null, [
+        h("div", { class: "chips" }, SIM.carriers.map(function (c, i) { return chip(c.name, (C.simCarrier || 0) === i, function () { C.simCarrier = i; C.simPlan = 0; renderCalc(); }); })),
+        h("div", { class: "simrow" }, [sel, add]),
+        h("div", { class: "rnote", text: sc.note || "" }),
+        lines
       ]));
     }
-    if (p.extraTv) {
-      policy.appendChild(h("div", { class: "card" }, [
-        h("h3", null, ["추가 TV", h("small", { text: p.extraTvLabel.replace("추가티비", "").trim() })]),
-        h("dl", { class: "kv" }, [
-          h("dt", { text: "기본료" }), h("dd", { text: won(p.extraTv.base) }),
-          h("dt", { text: "셋탑 (" + p.extraTv.stbLabel + ")" }), h("dd", { text: won(p.extraTv.stb) }),
-          h("dt", { class: "sum", text: "월 금액" }), h("dd", { class: "sum", text: won(p.extraTv.monthly) })
-        ])
-      ]));
-    }
-    if (/^KT/.test(c.name) && (p.notes.length || p.extra.length)) {
-      var ul = h("ul", { class: "notes" });
-      p.notes.forEach(function (n) { ul.appendChild(h("li", { text: n })); });
-      p.extra.forEach(function (n) { ul.appendChild(h("li", { class: "extra", text: n })); });
-      policy.appendChild(h("div", { class: "card caution" }, [h("h3", { text: "가입 조건 · 주의" }), ul]));
-    } else if (p.extra.length) {
-      var ul2 = h("ul", { class: "notes plain" });
-      p.extra.forEach(function (n) { ul2.appendChild(h("li", { text: n })); });
-      policy.appendChild(h("div", { class: "card" }, [h("h3", { text: "안내" }), ul2]));
-    }
-    if (policy.children.length) sec.appendChild(policy);
-    return sec;
   }
 
-  function renderCarriers() {
-    carriersEl.innerHTML = "";
-    var frag = document.createDocumentFragment();
-    channel().carriers.forEach(function (c, i) {
-      if (state.carrier !== "all" && state.carrier !== String(i)) return;
-      var sec = carrierSection(c);
-      if (sec) frag.appendChild(sec);
+  function compute() {
+    var car = carrierObj(), prod = C.product;
+    var r = { lines: [], monthly: 0, install: null, giftNet: null, giftNetCash: null, giftParts: [], giftSim: 0, ded: 0, notes: [] };
+    if (car && prod) {
+      var base = C.bundle && prod.bundle != null ? prod.bundle : prod.monthly;
+      r.lines.push([C.bundle && prod.bundle != null ? "인터넷+TV (결합)" : "인터넷+TV", base]);
+      r.monthly += base;
+      var et = car.policy.extraTv;
+      if (C.extraTv > 0 && et && et.monthly != null) { r.lines.push(["추가 TV " + C.extraTv + "대", et.monthly * C.extraTv]); r.monthly += et.monthly * C.extraTv; }
+      var ins = car.policy.install;
+      if (ins) {
+        if (prod.tv == null) r.install = ins.single;
+        else if (C.extraTv === 0) r.install = ins.it;
+        else {
+          r.install = ins.itt;
+          var per = /\+\s*([\d,]+)/.exec(car.policy.installLabel || "");
+          if (C.extraTv > 1 && per) r.install += Number(per[1].replace(/,/g, "")) * (C.extraTv - 1);
+        }
+      }
+      r.giftNet = prod.gift.total;
+      var cash = prod.gift.parts.filter(function (p) { return p[0] === "현금"; }).reduce(function (a, p) { return a + p[1]; }, 0);
+      r.giftNetCash = prod.gift.parts.length ? cash : null;
+      r.giftParts = prod.gift.parts;
+      deductions(car).forEach(function (d, i) { if (C.ded[i]) r.ded += d.man; });
+      (car.policy.extra || []).forEach(function (t) { if (!/-\s*\d+\s*만/.test(t)) r.notes.push(t); });
+    }
+    C.sims.forEach(function (ln, i) {
+      var cc = SIM.carriers[ln.carrier], pl = cc.plans[ln.plan];
+      var sameBefore = C.sims.slice(0, i).filter(function (x) { return x.carrier === ln.carrier; }).length;
+      var g = simGiftFor(cc, pl, sameBefore);
+      r.lines.push(["유심 " + cc.name + " " + pl.name, pl.discount]);
+      r.monthly += pl.discount || 0;
+      if (g.man != null) r.giftSim += g.man;
     });
-    if (!frag.childNodes.length) {
-      var what = [state.speed !== "all" ? state.speed : "", search.value.trim()].filter(Boolean).join(" ");
-      frag.appendChild(h("div", { class: "carrier" }, [h("div", { class: "none", text: "「" + what + "」에 해당하는 상품이 없습니다." })]));
+    return r;
+  }
+
+  function summaryText() {
+    var car = carrierObj(), prod = C.product, r = compute();
+    var out = [];
+    if (car && prod) out.push("[" + netCh().name + "] " + shortName(car.name) + " " + C.speed + " · " + prod.name);
+    r.lines.forEach(function (l) { out.push(l[0] + " " + won(l[1]) + "원"); });
+    if (r.lines.length > 1) out.push("월 합계 " + won(r.monthly) + "원");
+    if (r.install != null) out.push("설치비 " + won(r.install) + "원");
+    if (r.giftNet != null || r.giftSim) {
+      var tot = (r.giftNet || 0) + r.giftSim - r.ded;
+      var s2 = "사은품 총 " + manWon(tot);
+      if (r.giftNetCash != null) s2 += " (현금 기준 " + manWon(r.giftNetCash + r.giftSim - r.ded) + ")";
+      out.push(s2);
     }
-    carriersEl.appendChild(frag);
-    carriersEl.style.display = "flex";
-    carriersEl.style.flexDirection = "column";
-    carriersEl.style.gap = "18px";
+    return out.join("\n");
   }
 
-  function render() {
-    buildTabs();
-    buildSpeeds();
-    renderCarriers();
+  function renderResult() {
+    resultEl.innerHTML = "";
+    var car = carrierObj(), prod = C.product, r = compute();
+    resultEl.appendChild(h("h3", { text: "계산 결과" }));
+    if (!prod && !C.sims.length) {
+      resultEl.appendChild(h("div", { class: "empty", text: "통신사와 상품을 고르면 여기에 월요금 · 설치비 · 사은품이 나옵니다." }));
+      return;
+    }
+    if (car && prod) resultEl.appendChild(h("div", { class: "pick" }, [h("b", { text: shortName(car.name) + " " + C.speed }), h("br"), prod.name]));
+    var m = h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "월요금" })]);
+    r.lines.forEach(function (l) { m.appendChild(h("div", { class: "rrow" }, [h("span", { text: l[0] }), h("span", { text: won(l[1]) + "원" })])); });
+    m.appendChild(h("div", { class: "rrow sum big" }, [h("span", { text: "월 합계" }), h("span", { text: won(r.monthly) + "원" })]));
+    resultEl.appendChild(m);
+    if (r.install != null) {
+      resultEl.appendChild(h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "설치비" }), h("div", { class: "rrow" }, [h("span", { text: prod.tv == null ? "인터넷 단독" : (C.extraTv ? "인+티+티" : "인+티") }), h("span", { text: won(r.install) + "원" })])]));
+    }
+    if (r.giftNet != null || C.sims.length) {
+      var g = h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "사은품 (만원)" })]);
+      if (r.giftNet != null) {
+        g.appendChild(h("div", { class: "rrow" }, [h("span", { text: "인터넷·TV" }), h("span", { text: manWon(r.giftNet) })]));
+        if (r.giftParts.length) g.appendChild(h("div", { class: "rnote", text: r.giftParts.map(function (p) { return p[0] + " " + p[1]; }).join(" + ") }));
+      }
+      if (C.sims.length) g.appendChild(h("div", { class: "rrow" }, [h("span", { text: "유심 " + C.sims.length + "회선" }), h("span", { text: manWon(r.giftSim) })]));
+      if (r.ded) g.appendChild(h("div", { class: "rrow minus" }, [h("span", { text: "차감" }), h("span", { text: "-" + manWon(r.ded) })]));
+      var tot = (r.giftNet || 0) + r.giftSim - r.ded;
+      g.appendChild(h("div", { class: "rrow sum big" }, [h("span", { text: "총액" }), h("span", { text: manWon(tot) })]));
+      if (r.giftNetCash != null) g.appendChild(h("div", { class: "rrow" }, [h("span", { text: "현금 기준" }), h("span", { text: manWon(r.giftNetCash + r.giftSim - r.ded) })]));
+      resultEl.appendChild(g);
+    }
+    if (r.notes.length) resultEl.appendChild(h("div", { class: "rsec" }, [h("div", { class: "lbl", text: "참고" })].concat(r.notes.map(function (t) { return h("div", { class: "rnote", text: t }); }))));
+    var copy = h("button", { type: "button", class: "copy-btn", text: "결과 복사" });
+    copy.addEventListener("click", function () {
+      var t = summaryText();
+      var done = function () { copy.textContent = "복사됨"; setTimeout(function () { copy.textContent = "결과 복사"; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { window.prompt("아래 내용을 복사하세요", t); });
+      else window.prompt("아래 내용을 복사하세요", t);
+    });
+    resultEl.appendChild(copy);
+    var reset = h("button", { type: "button", class: "reset-btn", text: "처음부터" });
+    reset.addEventListener("click", function () { C.carrier = null; C.speed = null; C.product = null; C.extraTv = 0; C.bundle = false; C.sims = []; C.ded = {}; renderCalc(); });
+    resultEl.appendChild(reset);
   }
 
-  fareBtn.addEventListener("click", function () {
-    var open = panel.hidden;
-    panel.hidden = !open;
-    fareBtn.setAttribute("aria-expanded", String(open));
-    launcher.classList.toggle("compact", open);
-    if (open) { render(); panel.scrollIntoView({ behavior: "smooth", block: "start" }); }
-  });
-  search.addEventListener("input", function () {
-    state.q = search.value.trim().toLowerCase();
-    renderCarriers();
-  });
+  function renderCalc() { renderSteps(); renderResult(); }
+  renderCalc();
 })();
 </script>
 </body>
