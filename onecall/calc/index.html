@@ -275,13 +275,12 @@ var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carrier
   function shortName(name) { return name.replace(/\s*\([\d\-]+\)\s*$/, ""); }
 
   var stepsEl = el("steps"), resultEl = el("result");
-  var NET = RATES.channels;
+  var NET = RATES.channels.filter(function (c) { return c.type !== "sim"; });
+  var SIM = RATES.channels.filter(function (c) { return c.type === "sim"; })[0] || null;
   var C = { ch: 0, carrier: null, speed: null, product: null, extraTv: 0, bundle: false, simOpen: false, simCarrier: 0, simPlan: 0, sims: [], ded: {} };
 
   function netCh() { return NET[C.ch]; }
-  function netCarriers() { return (netCh().carriers || []).filter(function (c) { return c.type !== "sim"; }); }
-  function simCarriers() { return (netCh().carriers || []).filter(function (c) { return c.type === "sim"; }); }
-  function carrierObj() { return C.carrier == null ? null : netCarriers()[C.carrier]; }
+  function carrierObj() { return C.carrier == null ? null : netCh().carriers[C.carrier]; }
   function manWon(n) { return n == null ? "-" : n.toLocaleString("ko-KR") + "만"; }
   function parseMan(text) { var m = /(\d+)\s*만/.exec(text || ""); return m ? Number(m[1]) : null; }
   function deductions(c) {
@@ -330,7 +329,7 @@ var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carrier
         return chip(ch.name, C.ch === i, function () { C.ch = i; C.carrier = null; C.speed = null; C.product = null; C.ded = {}; C.sims = []; renderCalc(); });
       }))]));
     }
-    stepsEl.appendChild(step(n++, "통신사", null, [h("div", { class: "chips" }, netCarriers().map(function (c, i) {
+    stepsEl.appendChild(step(n++, "통신사", null, [h("div", { class: "chips" }, netCh().carriers.map(function (c, i) {
       return chip(shortName(c.name), C.carrier === i, function () { C.carrier = i; C.speed = null; C.product = null; C.extraTv = 0; C.bundle = false; C.ded = {}; renderCalc(); });
     }))]));
     var car = carrierObj();
@@ -376,8 +375,7 @@ var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carrier
         }))]));
       }
     }
-    var sim = simCarriers();
-    if (sim.length && !C.simOpen) {
+    if (SIM && !C.simOpen) {
       var go = h("button", { type: "button", class: "go", text: "유심 계산하기" });
       go.addEventListener("click", function () { C.simOpen = true; renderCalc(); var last = stepsEl.lastElementChild; if (last) last.scrollIntoView({ behavior: "smooth", block: "start" }); });
       stepsEl.appendChild(h("div", { class: "sim-open" }, [
@@ -385,8 +383,8 @@ var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carrier
         go
       ]));
     }
-    if (sim.length && C.simOpen) {
-      var sc = sim[C.simCarrier] || sim[0];
+    if (SIM && C.simOpen) {
+      var sc = SIM.carriers[C.simCarrier] || SIM.carriers[0];
       if (C.simPlan >= sc.plans.length) C.simPlan = 0;
       var sel = h("select", { "aria-label": "요금제 선택" });
       sc.plans.forEach(function (pl, i) {
@@ -398,7 +396,7 @@ var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carrier
       var add = h("button", { type: "button", class: "tool", text: "+ 회선 추가" });
       add.addEventListener("click", function () { C.sims.push({ carrier: C.simCarrier, plan: C.simPlan }); renderCalc(); });
       var lines = h("div", { class: "lines" }, C.sims.map(function (ln, i) {
-        var cc = sim[ln.carrier], pl = cc.plans[ln.plan];
+        var cc = SIM.carriers[ln.carrier], pl = cc.plans[ln.plan];
         var sameBefore = C.sims.slice(0, i).filter(function (x) { return x.carrier === ln.carrier; }).length;
         var g = simGiftFor(cc, pl, sameBefore);
         var x = h("button", { type: "button", class: "del", text: "\u00d7", "aria-label": "회선 삭제" });
@@ -410,8 +408,8 @@ var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carrier
           x
         ]);
       }));
-      stepsEl.appendChild(step(n++, "유심", (sc.basis ? sc.basis + " · " : "") + "기본요금 → 선택약정 할인가", [
-        h("div", { class: "chips" }, sim.map(function (c, i) { return chip(c.name, (C.simCarrier || 0) === i, function () { C.simCarrier = i; C.simPlan = 0; renderCalc(); }); })),
+      stepsEl.appendChild(step(n++, "유심", (SIM.basis ? SIM.basis + " · " : "") + "기본요금 → 선택약정 할인가", [
+        h("div", { class: "chips" }, SIM.carriers.map(function (c, i) { return chip(c.name, (C.simCarrier || 0) === i, function () { C.simCarrier = i; C.simPlan = 0; renderCalc(); }); })),
         h("div", { class: "simrow" }, [sel, add]),
         h("div", { class: "rnote", text: sc.note || "" }),
         lines
@@ -446,9 +444,8 @@ var RATES = {"channels":[{"key":"Sheet1","name":"원콜","reserve":null,"carrier
       deductions(car).forEach(function (d, i) { if (C.ded[i]) r.ded += d.man; });
       (car.policy.extra || []).forEach(function (t) { if (!/-\s*\d+\s*만/.test(t)) r.notes.push(t); });
     }
-    var sim = simCarriers();
     C.sims.forEach(function (ln, i) {
-      var cc = sim[ln.carrier], pl = cc.plans[ln.plan];
+      var cc = SIM.carriers[ln.carrier], pl = cc.plans[ln.plan];
       var sameBefore = C.sims.slice(0, i).filter(function (x) { return x.carrier === ln.carrier; }).length;
       var g = simGiftFor(cc, pl, sameBefore);
       r.simLines.push(["유심 " + cc.name + " " + pl.name, pl.price, pl.discount]);
