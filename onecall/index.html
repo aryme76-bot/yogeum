@@ -377,6 +377,8 @@
   .notes li::marker { color: var(--caution); }
   .notes.plain li::marker { color: var(--ink-3); }
   .notes li.extra { font-weight: 700; color: var(--caution); }
+  .notes li.crit-light { color: var(--caution); font-weight: 500; }
+  .notes li.subhead { list-style: none; margin: 6px 0 2px -18px; font-weight: 700; color: var(--ink-2); font-size: 12px; }
 
   .foot { color: var(--ink-3); font-size: 13px; text-align: center; }
 
@@ -604,6 +606,18 @@ var REQUEST_FORM = false;
     return td;
   }
 
+  function maturity913Lines(c) {
+    var isSky = c.name.indexOf("스카이라이프") !== -1;
+    var isKt = !isSky && c.name.indexOf("KT") === 0;
+    var isLg = c.name.indexOf("LG") === 0;
+    if (isKt) return [{ text: "KT는 원스톱 없음", bold: true }];
+    return [
+      { text: "10월~11월 30일 기준", bold: false },
+      { text: isLg ? "가능 상품: 와파500+실속형 45,100원" : "인터넷+TV 결합상품만 가능", bold: true },
+      { text: "OSS 진행 시 +5만원", bold: true }
+    ];
+  }
+
   function simSection(c) {
     var terms = state.q.split(/[\s,]+/).filter(Boolean);
     var rows = c.plans.filter(function (p) {
@@ -664,10 +678,13 @@ var REQUEST_FORM = false;
     sec.appendChild(h("div", { class: "carrier-head" }, [h("h2", { text: c.name }), meta]));
 
     if (rows.length) {
-      var thead = h("thead", null, [h("tr", null, [
+      var hideGift = state.rateMode === "normal";
+      var headCells = [
         h("th", { class: "l", text: "상품" }), h("th", { text: "인터넷" }), h("th", { text: "TV" }), h("th", { text: "셋탑" }),
-        h("th", { text: "월요금" }), h("th", { text: "결합금액" }), h("th", { text: "사은품 총" }), h("th", { class: "l", text: "구성 (만원)" })
-      ])]);
+        h("th", { text: "월요금" }), h("th", { text: "결합금액" })
+      ];
+      if (!hideGift) headCells.push(h("th", { text: "사은품 총" }), h("th", { class: "l", text: "구성 (만원)" }));
+      var thead = h("thead", null, [h("tr", null, headCells)]);
       var groups = [];
       rows.forEach(function (p) {
         var sp = speedOf(p.name);
@@ -679,18 +696,21 @@ var REQUEST_FORM = false;
       var table = h("table", { class: "rates" }, [thead]);
       groups.forEach(function (g) {
       var tbody = h("tbody");
-      tbody.appendChild(h("tr", { class: "group" }, [h("td", { colspan: "8" }, [g.label, h("small", { text: g.items.length + "종" })])]));
+      tbody.appendChild(h("tr", { class: "group" }, [h("td", { colspan: String(hideGift ? 6 : 8) }, [g.label, h("small", { text: g.items.length + "종" })])]));
       g.items.forEach(function (p) {
-        var tr = h("tr", { class: p.tv == null ? "solo" : "" }, [
+        var cells = [
           h("td", { class: "l", text: p.name }),
           h("td", { class: "num", text: won(p.internet) }),
           h("td", { class: "num" + (p.tv == null ? " dim" : ""), text: won(p.tv) }),
           h("td", { class: "num" + (p.stb == null ? " dim" : ""), text: won(p.stb) }),
           h("td", { class: "num monthly", text: won(p.monthly) }),
-          h("td", { class: "num" + (p.bundle == null ? " dim" : ""), text: won(p.bundle) }),
-          h("td", { class: "num total" }, [p.gift.total != null ? String(p.gift.total) : "-", h("span", { text: p.gift.total != null ? "만" : "" })]),
-          giftParts(p.gift)
-        ]);
+          h("td", { class: "num" + (p.bundle == null ? " dim" : ""), text: won(p.bundle) })
+        ];
+        if (!hideGift) {
+          cells.push(h("td", { class: "num total" }, [p.gift.total != null ? String(p.gift.total) : "-", h("span", { text: p.gift.total != null ? "만" : "" })]));
+          cells.push(giftParts(p.gift));
+        }
+        var tr = h("tr", { class: p.tv == null ? "solo" : "" }, cells);
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);
@@ -722,15 +742,21 @@ var REQUEST_FORM = false;
         ])
       ]));
     }
-    if (/^KT/.test(c.name) && (p.notes.length || p.extra.length)) {
+    var showMaturityNote = state.rateMode === "m0" || state.rateMode === "m1";
+    var maturityLines = showMaturityNote ? maturity913Lines(c) : [];
+    if (/^KT/.test(c.name) && (p.notes.length || p.extra.length || maturityLines.length)) {
       var ul = h("ul", { class: "notes" });
+      maturityLines.forEach(function (n) { ul.appendChild(h("li", { class: n.bold ? "extra" : "crit-light", text: n.text })); });
+      if (maturityLines.length && (p.notes.length || p.extra.length)) ul.appendChild(h("li", { class: "subhead", text: "가입전 안내 사항" }));
       p.notes.forEach(function (n) { ul.appendChild(h("li", { text: n })); });
       p.extra.forEach(function (n) { ul.appendChild(h("li", { class: "extra", text: n })); });
-      policy.appendChild(h("div", { class: "card caution" }, [h("h3", { text: "가입 조건 · 주의" }), ul]));
-    } else if (p.extra.length) {
+      policy.appendChild(h("div", { class: "card caution" }, [h("h3", { text: maturityLines.length ? "공지사항(꼭 필독)" : "가입 조건 · 주의" }), ul]));
+    } else if (p.extra.length || maturityLines.length) {
       var ul2 = h("ul", { class: "notes plain" });
+      maturityLines.forEach(function (n) { ul2.appendChild(h("li", { class: n.bold ? "extra" : "crit-light", text: n.text })); });
+      if (maturityLines.length && p.extra.length) ul2.appendChild(h("li", { class: "subhead", text: "가입전 안내 사항" }));
       p.extra.forEach(function (n) { ul2.appendChild(h("li", { text: n })); });
-      policy.appendChild(h("div", { class: "card" }, [h("h3", { text: "안내" }), ul2]));
+      policy.appendChild(h("div", { class: "card" + (maturityLines.length ? " caution" : "") }, [h("h3", { text: maturityLines.length ? "공지사항(꼭 필독)" : "안내" }), ul2]));
     }
     if (policy.children.length) sec.appendChild(policy);
     return sec;
