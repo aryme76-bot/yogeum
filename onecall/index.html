@@ -638,7 +638,7 @@ var REQUEST_FORM = false;
     var isKt = !isSky && c.name.indexOf("KT") === 0;
     var isLg = !isSky && !isKt && c.name.indexOf("LG") === 0;
     if (isKt) return [{ text: "KT는 원스톱 없음", bold: true }];
-    if (isLg) return [{ text: "LG도 원스톱(OSS) 불가 — 프리미엄기가 상품으로만 진행", bold: true }];
+    if (isLg) return [{ text: "LG 와이파이요금제 단독은 가능, 인터넷+TV 결합(와이파이요금제)은 판매 불가 — 결합상품은 프리미엄안심 / OSS 불가", bold: true }];
     return [
       { text: "10월~11월 30일 기준", bold: false },
       { text: "인터넷+TV 결합상품만 가능", bold: true },
