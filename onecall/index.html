@@ -553,7 +553,7 @@ var REQUEST_FORM = false;
       var b = h("button", { type: "button", "aria-pressed": String(state.rateMode === it.key), text: it.label });
       b.addEventListener("click", function () {
         state.rateMode = it.key;
-        state.channel = 0; state.carrier = "all"; state.speed = "all";
+        state.channel = 0; state.speed = "all";
         Array.prototype.forEach.call(rateModeSeg.children, function (c) { c.setAttribute("aria-pressed", "false"); });
         b.setAttribute("aria-pressed", "true");
         channelSeg.hidden = state.rateMode !== "normal" || RATES.channels.length < 2;
