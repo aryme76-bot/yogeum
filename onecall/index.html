@@ -640,8 +640,10 @@ var REQUEST_FORM = false;
     var isSky = c.name.indexOf("스카이라이프") !== -1;
     var isKt = !isSky && c.name.indexOf("KT") === 0;
     var isLg = !isSky && !isKt && c.name.indexOf("LG") === 0;
+    var isSk = !isSky && !isKt && !isLg && c.name.indexOf("SK") === 0;
     if (isKt) return [{ text: "KT는 원스톱 없음", bold: true }];
     if (isLg) return [];
+    if (isSk) return [];
     return [
       { text: "OSS 기준(30일)", bold: false },
       { text: "인터넷+TV 결합상품만 가능", bold: true },
