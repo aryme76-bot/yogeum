@@ -507,7 +507,7 @@ var REQUEST_FORM = false;
   var MONTH_TIERS = [1, 2, 3, 4];
   function maturityLabel(months) {
     var now = new Date();
-    var d = new Date(now.getFullYear(), now.getMonth() + months, 1);
+    var d = new Date(now.getFullYear(), now.getMonth() + months - 1, 1);
     return (d.getMonth() + 1) + "월";
   }
 
